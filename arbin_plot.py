@@ -135,23 +135,28 @@ class PlotHandler(object):
         else:
             print('invalid tests')
             pass
-        self.figure = plt.figure(figsize=(12, 8))
-        # voltage/current curves
-        self.ax1 = plt.subplot2grid((5,6), (0,0), colspan=4, rowspan=2)
-        # capacity data
-        self.ax2 = plt.subplot2grid((5,6), (2,0), colspan=4, rowspan=2)
-        # samples info area
-        self.ax3 = plt.subplot2grid((5,6), (0,4), colspan=2, rowspan=4)
-        # step index area
-        self.ax4 = plt.subplot2grid((5,6), (4,0), colspan=4, rowspan=1)
         
+        self.gs_data = plt.GridSpec(7, 8, hspace=0.001) # split into 5 rows and 1 column, space for title and table
+
+        self.figure = plt.figure(figsize=(8,8))
+        # voltage/current curves
+        self.ax1 = self.figure.add_subplot(self.gs_data[2:4,:])#, colspan=4, rowspan=2)
+        # capacity data
+        self.ax2 = self.figure.add_subplot(self.gs_data[0:2,:], sharex=self.ax1)#, colspan=4, rowspan=2, sharex=self.ax1)
+        # step index area
+        self.ax4 = self.figure.add_subplot(self.gs_data[4,:], sharex=self.ax1)#, colspan=4, rowspan=1, sharex=self.ax1)
+        # samples info area
+        self.ax3 = self.figure.add_subplot(self.gs_data[6, 2:])#plt.subplot2grid((8,4), (6,1), colspan=3, rowspan=4)
+
+        
+
     def add_test(self, arbin_test):
         if type(arbin_test) == ArbinTest and arbin_test not in self.tests:
             self.tests.append(arbin_test)
         elif arbin_test in self.tests:
             print('test aready in tests')
             pass
-            
+    
     def create_plots(self):
         if not self.tests:
             print('no tests added. add test.')
@@ -161,74 +166,61 @@ class PlotHandler(object):
             self._create_stepQ_plot()
             self._create_infotable()
             self._create_stepix_plot()
-            
+            self._create_title()
+    
+    def _create_title(self):
+        title = 'Cell '
+        for test in self.tests:
+            title += '{} ({})\n'.format(test.info['Chan_Num'], test.ID)
+        self.title = title
+    
     def _create_CV_plot(self):
         v_plot = self.ax1 # get a reference to the axes object
-        
-        # set up the first axis
-        v_plot.set_xlabel('time')
-        v_plot.set_ylabel('voltage', color=dark_orange)
+        v_plot.set_ylabel('Voltage', color=dark_orange)
         v_plot.tick_params('y', colors=dark_orange)
-        
+        v_plot.get_yaxis().set_label_coords(-0.05,0.5)
+        plt.setp(v_plot.get_xticklabels(), visible=False)
         # set up the second axis
         i_plot = v_plot.twinx()
-        i_plot.set_ylabel('current', color = dark_blue)
+        i_plot.set_ylabel('Current(mA)', color = dark_blue)
         i_plot.tick_params('y', colors=dark_blue)
+        
+        # set up the first axis
+#        v_plot.set_xlabel('Test Time(s)')
+        v_plot.set_ylabel('Voltage')#, color=burgundy)
+#        stepq_plot.tick_params('y', colors=burgundy)
+        
         
         for test in self.tests:
             # retrieve the data
-            i = test.data['Current(A)']
+            i = test.data['Current(A)'] * 1000
             v = test.data['Voltage(V)']
             t = test.data['Test_Time(s)']
             #Plot the data
-            v_plot.plot(t, v, color=dark_orange)
-            i_plot.plot(t, i, color=dark_blue)
+            v_plot.plot(t, v, color=dark_orange, linewidth=0.6)
+            i_plot.plot(t, i, color=dark_blue, linewidth=0.6)
         
-#    def _create_Q_plot(self):
-#        qc_plot = self.axes[1] # get a reference to the axes object
-#        
-#        # set up the first axis
-#        qc_plot.set_xlabel('time')
-#        qc_plot.set_ylabel('Charge Capacity', color=burgundy)
-#        qc_plot.tick_params('y', colors=burgundy)
-#        
-#        # set up the second axis
-#        qd_plot = qc_plot.twinx()
-#        qd_plot.set_ylabel('Discharge Capacity', color = dark_green)
-#        qd_plot.tick_params('y', colors=dark_green)
-#        
-#        for test in self.tests:
-#            # retrieve the data
-#            qc = test.data['Charge_Capacity(Ah)']
-#            qd = test.data['Discharge_Capacity(Ah)']
-#            t = test.data['Test_Time(s)']
-#            #Plot the data
-#            qc_plot.plot(t, qc, color=burgundy)
-#            qd_plot.plot(t, qd, color=dark_green)
             
     def _create_stepQ_plot(self):
-        stepqc_plot = self.ax2 # get a reference to the axes object
-        
-        # set up the first axis
-        stepqc_plot.set_xlabel('time')
-        stepqc_plot.set_ylabel('Charge Capacity', color=burgundy)
-        stepqc_plot.tick_params('y', colors=burgundy)
-        
-        # set up the second axis
-        stepqd_plot = stepqc_plot.twinx()
-        stepqd_plot.set_ylabel('Discharge Capacity', color =  dark_green)
-        stepqd_plot.tick_params('y', colors=dark_green)
+        stepq_plot = self.ax2 # get a reference to the axes object
+        plt.setp(stepq_plot.get_xticklabels(), visible=False)
+        stepq_plot.set_ylabel('Capacity (mAh)')
+        stepq_plot.get_yaxis().set_label_coords(-0.05,0.5)
         
         for test in self.tests:
             # retrieve the data
-            qc = test.statistics['Charge_Capacity(Ah)']
-            qd = test.statistics['Discharge_Capacity(Ah)']
+            qc = test.statistics['Charge_Capacity(Ah)'] * 1000
+            qd = test.statistics['Discharge_Capacity(Ah)'] * 1000
             t = test.statistics['Test_Time(s)']
             #Plot the data
-            stepqc_plot.scatter(t, qc, color=burgundy, s=2)
-            stepqd_plot.scatter(t, qd, color=dark_green, s=2)
-            stepqc_plot.plot(t, qc, color=burgundy, linewidth=0.7)
-            stepqd_plot.plot(t, qd, color=dark_green, linewidth=0.7)
+            stepq_plot.scatter(t, qc, color=burgundy, s=2.5, label=None)
+            stepq_plot.scatter(t, qd, color=dark_green, s=2.5, label=None)
+            stepq_plot.plot(t, qc, color=burgundy, linewidth=0.9, label='Charge')
+            stepq_plot.plot(t, qd, color=dark_green, linewidth=0.9, label='Discharge')
+        
+        stepq_plot.legend(loc='best')
+        stepq_plot.set_ylim(bottom=0)
+        stepq_plot.set_xlim(left=0)
     
     def _create_infotable(self):
         infotable = self.ax3
@@ -252,11 +244,16 @@ class PlotHandler(object):
         
         for row in rows:  # for each row name
             values = data[row] # these are the values
-            valid = any(bool(value) for value in values) # if any value is bool true
+            valid = any(bool(value) and value == value for value in values) # if any value is bool true
             if valid: # proceed as normal
                 pass
             else: # delete the pair
                 del data[row]
+        try:
+            del data['Schedule_File_Name']
+        except:
+            pass
+        
 #        ids = []
 #        for tests in self.tests:
 #            column = [x for x in global_info.loc[test.ID] if x and x==x]
@@ -269,11 +266,18 @@ class PlotHandler(object):
         
     def _create_stepix_plot(self):
         cycle = self.ax4 # get a reference to the axes object
+#        cycle.yaxis.set_visible(False)
+        cycle.set_yticklabels([])
+        cycle.yaxis.set_tick_params(size=0)
+#        cycle.spines['right'].set_visible(False)
+#        cycle.spines['left'].set_visible(False)
+#        cycle.spines['top'].set_visible(False) 
+#        cycle.xaxis.set_visible(False)
         
-        # set up the first axis
-        cycle.set_xlabel('time')
-        cycle.set_ylabel('cycle indices')
-        
+        cycle.set_ylabel('Cycle Index')
+        cycle.set_xlabel('Test Time(s)')
+        cycle.set_ylim(bottom=0.9, top=1.1)
+        cycle.get_yaxis().set_label_coords(-0.05,0.5)
         for test in self.tests:
             # retrieve the data
             cyc = test.statistics["Cycle_Index"]
@@ -281,8 +285,19 @@ class PlotHandler(object):
             y = [1] * len(t)
             
             #Plot the data
-            cycle.scatter(t, y, color=(0,0,0), marker='|')
+
+            t5 = [time for c, time in zip(cyc, t) if not c % 5]
+            t_not5 = [time for c, time in zip(cyc, t) if c % 5]
+            y5 = [1] * len(t5)
+            y_not5 =[1] * len(t_not5)
+            
+            cycle.scatter(t5, y5, color=(0.85,0,0), marker='|')
+            cycle.scatter(t_not5, y_not5, color=(0,0,0.8), marker='|')
+            
             for index, values in enumerate(zip(t, y)):
+                x, y = values
+                y = y + 0.05
+                values = (x,y)
                 N = cyc.iloc[index]
                 if not bool(int(N) % 5):
                     time = values[0]
@@ -291,8 +306,10 @@ class PlotHandler(object):
                     pass
             
     def show(self):
-        plt.tight_layout()
-        plt.show()
+        self.figure.subplots_adjust(hspace=0.001)
+        self.figure.suptitle(self.title)
+        self.figure.tight_layout()
+        self.figure.show()
         
         
     
@@ -301,15 +318,15 @@ if __name__ == "__main__":
 #     select data file
 #    source = get_file()
     # create a parser for it
-    data_reader = TestMapper()
+#    data_reader = TestMapper()
     # map it to tests
-    mapping = data_reader.generate_data_mapping(source)
+#    mapping = data_reader.generate_data_mapping(source)
     # convert mapping to tests
     arbin_tests = data_reader.generate_arbin_tests(mapping)
     # create a plotter
-    for test in arbin_tests:
-        plotter = PlotHandler(test)
-        # generate the plots itnernally
-        plotter.create_plots()
-        # show
-        plotter.show()
+#    for test in arbin_tests:
+    plotter = PlotHandler(arbin_tests[2])
+    # generate the plots itnernally
+    plotter.create_plots()
+    # show
+    plotter.show()
