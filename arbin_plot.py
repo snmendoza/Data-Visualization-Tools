@@ -53,6 +53,14 @@ dark_blue = (0.1, .0, .6)
 
 class TestMapper(object):
 
+    
+    def __init__(self):
+        self.lut = {'new': {'channel':'Channel_{}_1',
+                            'statistics': 'StatisticsByCycle-Chan_{}'},
+                    'old': {'channel':'Channel_{}',
+                            'statistics': 'Statistics_{}'}}
+        self.version = 'old'
+        
     def generate_data_mapping(self, source):
         """
         Sets a source ".xlsx" file for TestMapper to read from.
@@ -71,15 +79,26 @@ class TestMapper(object):
             
             ### get info on names of other tabs to pair and search for
             self.info = self.excel_file.parse('Global_Info', skiprows=3)
+            
+            ## determine naming convention by version
+            if '7.00' in self.info['Software Version'].iloc[1]:
+                self.version = 'new'
+                self.convention = self.lut['new']
+            else:
+                self.version = 'old'
+                self.convention = self.lut['old']
+                
+                
             channels = self.info['Channel'][:]
             
             mapping = {}
             ### store map into dictionary
+
             for channel_name in channels:
-                statistics = "Statistics_" + str(channel_name)
-                data = "Channel_" + str(channel_name)
+                statistics = self.convention['statistics'].format(channel_name)
+                data = self.convention['channel'].format(channel_name)
                 
-                mapping[channel_name] = (data, statistics)
+                mapping[channel_name] = (data, statistics, self.version)
                 
         self.mapping = mapping
         return mapping
@@ -116,6 +135,7 @@ class ArbinTest(object):
         self.source = excel_file
         self.data = self.source.parse(sheets[0])
         self.statistics = self.source.parse(sheets[1])
+        self.version = sheets[-1]
         
         if ID:
             self.ID = ID
@@ -123,6 +143,7 @@ class ArbinTest(object):
             self.info = info_sheet.loc[self.ID]
         else:
             pass
+        
     def __iter__(self):
         yield self
             
@@ -171,8 +192,14 @@ class PlotHandler(object):
     def _create_title(self):
         title = 'Cell '
         for test in self.tests:
-            title += '{} ({})\n'.format(test.info['Chan_Num'], test.ID)
-        self.title = title
+            if test.version == 'old':
+                name = ' Item_ID'
+            else:
+                name = 'Item ID'
+                
+            title += '{} ({})\n'.format(test.info[name], test.ID)
+        subtitle = 'file: {}'.format(self.tests[0].source.io)
+        self.title = title + subtitle 
     
     def _create_CV_plot(self):
         v_plot = self.ax1 # get a reference to the axes object
@@ -223,7 +250,10 @@ class PlotHandler(object):
         stepq_plot.set_xlim(left=0)
     
     def _create_infotable(self):
-        infotable = self.ax3
+        '''
+        Creates table of information
+        '''
+        infotable = self.ax3 # axis ref
         infotable.axis('tight')
         infotable.axis('off')
         
@@ -285,9 +315,10 @@ class PlotHandler(object):
             y = [1] * len(t)
             
             #Plot the data
-
+            # get every 5th data point and not 5th data point separately
             t5 = [time for c, time in zip(cyc, t) if not c % 5]
             t_not5 = [time for c, time in zip(cyc, t) if c % 5]
+            
             y5 = [1] * len(t5)
             y_not5 =[1] * len(t_not5)
             
@@ -308,7 +339,7 @@ class PlotHandler(object):
     def show(self):
         self.figure.subplots_adjust(hspace=0.001)
         self.figure.suptitle(self.title)
-        self.figure.tight_layout()
+#        self.figure.tight_layout()
         self.figure.show()
         
         
@@ -318,9 +349,9 @@ if __name__ == "__main__":
 #     select data file
 #    source = get_file()
     # create a parser for it
-#    data_reader = TestMapper()
+    data_reader = TestMapper()
     # map it to tests
-#    mapping = data_reader.generate_data_mapping(source)
+    mapping = data_reader.generate_data_mapping(source)
     # convert mapping to tests
     arbin_tests = data_reader.generate_arbin_tests(mapping)
     # create a plotter
