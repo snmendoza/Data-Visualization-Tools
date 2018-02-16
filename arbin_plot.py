@@ -109,22 +109,31 @@ class ArbinTest(object):
         
     def __iter__(self):
         yield self
-            
-    
-    
+           
+
+def startup():
+    '''
+    Get source file for tests, 
+    Parse out what tests exist in the file using test mapper
+    return arbin test mapping
+    '''
+    source = get_file()
+    data_reader = TestMapper()
+    mapping = data_reader.generate_data_mapping(source)
+    arbin_tests = data_reader.generate_arbin_tests(mapping)
+    return arbin_tests
+
+def plotting(arbin_tests):
+    if arbin_tests is list:
+        for test in arbin_tests:
+            plotter = PyPlotHandler(test, types=ArbinTest)
+            plotter.create_plots()
+            plotter.show()
+    else:
+        plotter = PyPlotHandler(arbin_tests, types=ArbinTest)
+        plotter.create_plots()
+        plotter.show()
+        
 if __name__ == "__main__":
-#     select data file
-#    source = get_file()
-    # create a parser for it
-#    data_reader = TestMapper()
-    # map it to tests
-#    mapping = data_reader.generate_data_mapping(source)
-    # convert mapping to tests
-#    arbin_tests = data_reader.generate_arbin_tests(mapping)
-    # create a plotter
-#    for test in arbin_tests:
-    plotter = PyPlotHandler(arbin_tests[2], types=ArbinTest)
-    # generate the plots itnernally
-    plotter.create_plots()
-    # show
-    plotter.show()
+    arbin_tests = startup()
+    plotting(arbin_tests)
