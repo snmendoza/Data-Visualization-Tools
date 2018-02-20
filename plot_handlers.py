@@ -351,8 +351,8 @@ class PyPlotHandler(PlotHandler):
             qd = test.statistics['Discharge_Capacity(Ah)'] * 1000
             t = test.statistics['Test_Time(s)']
             #Plot the data
-            stepq_plot.scatter(t, qc, color=burgundy, s=5, label=None)
-            stepq_plot.scatter(t, qd, color=dark_green, s=5, label=None)
+            stepq_plot.scatter(t, qc, color=burgundy, s=5, label='Charge Capacity')
+            stepq_plot.scatter(t, qd, color=dark_green, s=5, label='Dicharge Capacity')
 #            stepq_plot.plot(t, qc, color=burgundy, linewidth=0.9, label='Charge')
 #            stepq_plot.plot(t, qd, color=dark_green, linewidth=0.9, label='Discharge')
 #        

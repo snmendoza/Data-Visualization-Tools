@@ -6,7 +6,7 @@ Created on Wed Feb  7 13:49:57 2018
 """
 
 import pandas as pd
-from file_utils import *
+import file_utils
 import xlrd
 from matplotlib import pyplot as plt
 from collections import OrderedDict as OrDict
@@ -117,18 +117,19 @@ def startup():
     Parse out what tests exist in the file using test mapper
     return arbin test mapping
     '''
-    source = get_file()
+    source = file_utils.get_file()
     data_reader = TestMapper()
     mapping = data_reader.generate_data_mapping(source)
     arbin_tests = data_reader.generate_arbin_tests(mapping)
     return arbin_tests
 
 def plotting(arbin_tests):
-    if arbin_tests is list:
+    test_dict = {}
+    if type(arbin_tests) is list:
         for test in arbin_tests:
-            plotter = PyPlotHandler(test, types=ArbinTest)
-            plotter.create_plots()
-            plotter.show()
+            test_dict[test] = PyPlotHandler(test, types=ArbinTest)
+            test_dict[test].create_plots()
+            test_dict[test].show()
     else:
         plotter = PyPlotHandler(arbin_tests, types=ArbinTest)
         plotter.create_plots()
