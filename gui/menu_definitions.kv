@@ -1,0 +1,57 @@
+
+#: import filechooser gui.filechooser
+#: import configuration configuration
+
+<SideBarButton@Button>:
+     text_size: self.size
+     size_hint_y: 0.15
+     padding: 15, 15
+     halign: 'left'
+     valign: 'middle'
+
+<SideBar@BoxLayout>:
+     orientation: 'vertical'
+     SideBarButton:
+          text: 'Load File'
+          on_press: dialog = filechooser.FileDialog(app.load_data_file); dialog.load_file(configuration.parser['settings']['data_location'])
+     SideBarButton:
+          text: ''
+     SideBarButton:
+          text: 'Plot Selected'
+          on_press: app.plot_selected()
+
+<TreeViewButton>:
+     size_hint_y: 0.1
+
+
+<ScrollTree@ScrollView>:
+     TreeView:
+          id: treeview
+          root_options: {'text':'Loaded Files', 'hide_root':False}
+          size_hint_y: None
+          height:self.parent.height * 2
+
+<MenuBar@BoxLayout>:
+     orientation:'horizontal'
+     SideBar:
+          size_hint_x: 0.2
+     ScrollTree:
+          id: scrolltree
+
+<PlotTabbedPanel>:
+     do_default_tab: False
+
+<PlotTab>:
+     orientation: 'horizontal'
+     BoxLayout:
+          size_hint_x: 0.2
+          orientation: 'vertical'
+          Label:
+               text: 'Active Mass:'
+               size_hint_y: 0.1
+          TextInput:
+               text: '(mg)'
+               size_hint_y: 0.1
+               multiline: False
+               on_text_validate:print('triggered'); root.actual_parent.update_mass(self)
+          Widget:
