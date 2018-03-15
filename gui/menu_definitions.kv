@@ -13,19 +13,24 @@
      orientation: 'vertical'
      SideBarButton:
           text: 'Load File'
+          size_hint_y: None
+          height: 35
           on_press: dialog = filechooser.FileDialog(app.load_data_file); dialog.load_file(configuration.parser['settings']['data_location'])
      SideBarButton:
           text: ''
      SideBarButton:
+          size_hint_y: None
+          height: 35
           text: 'Plot Selected'
           on_press: app.plot_selected()
 
 <TreeViewButton>:
      size_hint_y: 0.1
 
-
+<CustomTreeView>:
+     app: app
 <ScrollTree@ScrollView>:
-     TreeView:
+     CustomTreeView:
           id: treeview
           root_options: {'text':'Loaded Files', 'hide_root':False}
           size_hint_y: None
@@ -38,20 +43,41 @@
      ScrollTree:
           id: scrolltree
 
+<SideBarLabelEntry@BoxLayout>:
+     orientation: 'vertical'
+
 <PlotTabbedPanel>:
      do_default_tab: False
 
 <PlotTab>:
      orientation: 'horizontal'
      BoxLayout:
+          padding: 2
+          spacing: 5
           size_hint_x: 0.2
           orientation: 'vertical'
-          Label:
-               text: 'Active Mass:'
-               size_hint_y: 0.1
-          TextInput:
-               text: '(mg)'
-               size_hint_y: 0.1
-               multiline: False
-               on_text_validate:print('triggered'); root.actual_parent.update_mass(self)
+          SideBarLabelEntry:
+               size_hint_y: None
+               height: 60
+               Label:
+                    text: 'Active Mass:'
+               TextInput:
+                    id: mass_input
+                    text: '(mg)'
+                    multiline: False
+                    on_text_validate:print('triggered'); root.actual_parent.update_mass(self)
+          SideBarLabelEntry:
+               size_hint_y: None
+               height: 60
+               Label:
+                    text: "Milestone Ref.:"
+               TextInput:
+                    text: ' (mAh/g)'
+                    multiline: False
+                    on_text_validate: root.actual_parent.update_reference(self)
+
           Widget:
+          Button:
+               size_hint_y: 0.1
+               text: 'View in Excel'
+               on_release: root.actual_parent.launch_excel(self)

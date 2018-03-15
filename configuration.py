@@ -8,3 +8,4 @@ if __name__ == '__main__':
     sections = parser.sections()
     for sect in sections:
         print(sect, parser[sect])
+        # configuration.parser['settings']['mass_header']

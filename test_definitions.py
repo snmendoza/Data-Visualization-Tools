@@ -39,7 +39,7 @@ class ArbinTest(object):
             print(e, '\nfailed to retrieve cell info for {}'.format(self.arbin_ID))
             self.cell_build_info = None
         else:
-            print('successfully retreived build info from database : {}'.formate(self.item_ID))
+            print('successfully retreived build info from database : {}'.format(self.item_ID))
         ###
 
     def get_version_keys(self):
@@ -96,7 +96,7 @@ class ArbinTest(object):
                 pass
         else:
             pass
-        name_indexed_sheet = sheet.set_index('Cell Name')
+        name_indexed_sheet = sheet.set_index('Cell  Name')
         cell_build_info = name_indexed_sheet.loc[self.item_ID]
         return cell_build_info
 

@@ -3,18 +3,20 @@ kivy.require('1.10.0')
 from kivy.config import Config
 Config.set('graphics', 'width', '800')
 Config.set('graphics', 'height', '1100')
+Config.set('input', 'mouse', 'mouse,multitouch_on_demand')
+Config.set('kivy','exit_on_escape', 0)
 
 from kivy.app import App
 from kivy.lang import Builder
 from collections import OrderedDict as OrDict
-from . menu_definitions import *
+from . menu_definitions import * # custom kivy nav bar
 from os.path import basename
 
 
 import matplotlib
 matplotlib.use('module://kivy.garden.matplotlib.backend_kivy')
-from kivy.garden.matplotlib.backend_kivyagg import FigureCanvas,\
-                                                NavigationToolbar2Kivy
+from kivy.garden.matplotlib.backend_kivy import FigureCanvas
+
 
 class DataApp(App):
 
@@ -29,6 +31,7 @@ class DataApp(App):
             self.data_plot = control_module
         # file tree
         self.file_tree = self.root.ids.menubar.ids.scrolltree.ids.treeview
+        self.plotted_files = []
         #plotting area
         self.plot_panel = self.root.ids.PlotPanel
         return self.root
@@ -60,6 +63,11 @@ class DataApp(App):
 
         '''
         ### get map of tests and generate arbin tests ###
+        if file in self.plotted_files:
+            print('File already plotted')
+            return
+        else:
+            self.plotted_files.append(file)
         try:
             test_map = self.control_module.test_mapper.generate_data_mapping(file)
             tests = self.control_module.test_mapper.generate_arbin_tests(test_map)
@@ -111,6 +119,7 @@ class DataApp(App):
         new_tab = PlotPanelItem(plot_handler, arbin_test,root=self.root, text=arbin_test.item_ID)
         ### add tab to tabbed panel
         self.plot_panel.add_widget(new_tab)
+        new_tab.on_release()
 
 
 def build_app(control_module):

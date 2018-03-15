@@ -6,19 +6,39 @@ corresponding .kv file contains graphical setup and descriptions.
 ### properties
 from kivy.properties import ObjectProperty
 ###
+from kivy.clock import Clock
+from kivy._clock import ClockEvent
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.button import Button
-from kivy.uix.treeview import TreeViewNode, TreeViewLabel
+from kivy.uix.treeview import TreeViewNode, TreeViewLabel, TreeView
 from kivy.uix.label import Label
 from kivy.uix.tabbedpanel import TabbedPanel, TabbedPanelItem, TabbedPanelHeader
 from kivy.garden.matplotlib.backend_kivyagg import FigureCanvas,\
                                                 NavigationToolbar2Kivy
 
+from functools import partial
+from time import time
+from os import startfile
+import configuration
+
+
 class MenuBar(BoxLayout):
     scrolltree = ObjectProperty(None)
 
 class PlotTabbedPanel(TabbedPanel): pass
+
+class CustomKivyNavBar(NavigationToolbar2Kivy):
+   def drag_pan(self, event):
+        """Callback for dragging in pan/zoom mode.
+        copied from matplotlib docs, overriding
+        the canvas draw to make faster panning"""
+        for a, ind in self._xypress:
+            #safer to use the recorded button at the press than current button:
+            #multiple button can get pressed during motion...
+            a.drag_pan(self._button_pressed, event.key, event.x, event.y)
+        # self.canvas.draw_idle()
+        self.canvas.draw()
 
 class PlotTab(BoxLayout):
     def __init__(self, actual_parent=None, *args, **kwargs):
@@ -41,9 +61,19 @@ class PlotPanelItem(TabbedPanelItem):
         self.plot_tab = PlotTab(actual_parent = self)
         self.plot_tab.add_widget(canvas)
         self.add_widget(self.plot_tab)
+        if self.arbin_test.cell_build_info is not None:
+            mass_header = configuration.parser['settings']['mass_header']
+            mass = self.arbin_test.cell_build_info[mass_header]
+            self.plot_tab.ids.mass_input.text = str(mass)
 
         ### get my nav bar
-        self.nav_bar = NavigationToolbar2Kivy(canvas)
+        # self.nav_bar = NavigationToolbar2Kivy(canvas)
+        self.nav_bar = CustomKivyNavBar(canvas)
+        try:
+            setattr(self.nav_bar.actionbar,'background_image', '')
+            setattr(self.nav_bar.actionbar,'background_color', (.5, .47, .5, 0.7))
+        except Exception as e:
+            print(e)
         self.plt_canvas = canvas
 
     def on_release(self, *largs):
@@ -86,6 +116,39 @@ class PlotPanelItem(TabbedPanelItem):
 
         self.plt_canvas.draw()
 
+    def launch_excel(self, instance, *args):
+        '''
+        Launch one or all corresponding excel files being displayed in this tab
+        '''
+        try:
+            excel_file = self.arbin_test.source.io
+            startfile(excel_file)
+        except Exception as e:
+            print('failed to launch excel file {} : \n'.format(excel_file), e)
+
+    def update_reference(self, instance, *args):
+        '''
+        Add a milestone reference line to the capacity plot or update if not present
+        '''
+        try:
+            target = float(instance.text)
+        except Exception as e:
+            print('error converting mass input to float\n', instance.text, e)
+            return
+
+        if not int(target):
+            self.plot_handler.ref_line.set_color('white')
+            self.plot_handler.ref_line.set_label(None)
+            print('set')
+        else:
+            ref_new = [target, target]
+            self.plot_handler.ref_line.set_ydata(ref_new)
+            self.plot_handler.ref_line.set_label('Milestone')
+            self.plot_handler.ref_line.set_color('grey')
+        self.plt_canvas.draw()
+        return True
+
+
 
 
 class ScrollTree(ScrollView):
@@ -96,6 +159,30 @@ class TreeViewButton(Label, TreeViewNode): pass
 
 class ActiveTreeViewLabel(TreeViewLabel):
     node_object = ObjectProperty(None)
+
+class CustomTreeView(TreeView):
+    scheduled_touch_down = None
+    app = ObjectProperty(None)
+
+    def on_touch_down(self, touch):
+        if touch.is_double_tap:
+            self.app.plot_selected()
+        else:
+            node = self.get_node_at_pos(touch.pos)
+            print(node)
+            if not node:
+                return
+            if node.disabled:
+                return
+            # toggle node or selection ?
+            if node.x - self.indent_start <= touch.x < node.x:
+                self.toggle_node(node)
+            elif node.x <= touch.x:
+                self.select_node(node)
+                node.dispatch('on_touch_down', touch)
+            return True
+
+
 
 class Root(BoxLayout):
     menubar = ObjectProperty(None)
