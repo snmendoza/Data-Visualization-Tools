@@ -16,4 +16,4 @@
 
             Button:
                 text: "Load"
-                on_release: root.ids.filechooser.on_submit()
+                on_release: root.ids.filechooser.on_submit(filechooser.path, filechooser.selection)
