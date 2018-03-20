@@ -32,6 +32,7 @@ class DataApp(App):
         # file tree
         self.file_tree = self.root.ids.menubar.ids.scrolltree.ids.treeview
         self.plotted_files = []
+        self.added_files = []
         #plotting area
         self.plot_panel = self.root.ids.PlotPanel
         return self.root
@@ -48,11 +49,16 @@ class DataApp(App):
         try: # catch iteration error
             for file in file_list:
                 try: # catching file parsin error
-                    self.send_to_tree(file)
+                    node = self.send_to_tree(file)
                 except Exception as e:
                     print('failed to parse {} to file tree'.format(file), e)
         except Exception as e:
             print(e)
+        else:
+            if self.root.ids.menubar.ids.sidebar.ids.autopopulate.state == 'down' and node:
+                nodes = node.nodes
+                for node in nodes:
+                    self.plot_selected(selection = node)
 
 
     def send_to_tree(self, file):
@@ -63,15 +69,15 @@ class DataApp(App):
 
         '''
         ### get map of tests and generate arbin tests ###
-        if file in self.plotted_files:
+        if file in self.added_files:
             print('File already plotted')
             return
         else:
-            self.plotted_files.append(file)
+            self.added_files.append(file)
         try:
             test_map = self.control_module.test_mapper.generate_data_mapping(file)
             tests = self.control_module.test_mapper.generate_arbin_tests(test_map)
-            tests_as_nodes = [ActiveTreeViewLabel(text = test.item_ID, node_object = test) for test in tests]
+            tests_as_nodes = [ActiveTreeViewLabel(text = '{}_(Ch. {})'.format(test.item_ID, test.arbin_ID) , node_object = test) for test in tests]
 
         except Exception as e:
             print('failed send to tree \n', e)
@@ -83,24 +89,37 @@ class DataApp(App):
             for subnode in tests_as_nodes:
                 self.file_tree.add_node(subnode, node)
             print('successfully added {} to tree'.format(file))
+            return node
         ####
 
-    def plot_selected(self):
+    def plot_selected(self, selection = None):
         '''
         Trigger to main app to plot selected files from tree view
         no inputs, no outputs
         '''
         # type references
+
         plot_handler = self.control_module.PyPlotHandler
         ArbinTest = self.control_module.ArbinTest
 
         ### get selected node, retrieved as ActiveTreeViewLabel type
         selected_test = self.file_tree.selected_node
-        if not selected_test:
+        if not selected_test and not selection:
             print('no selection made')
             return
+        elif selection and not selected_test:
+            selected_test = selection
+        elif selected_test and not selection:
+            pass
+        else:
+            pass
 
         ### get arbin test from node
+        if selected_test.text in self.plotted_files:
+            print('File already plotted')
+            return
+        else:
+            self.plotted_files.append(selected_test.text)
         arbin_test = selected_test.node_object
 
         # create plot handler from arbin test
@@ -116,7 +135,7 @@ class DataApp(App):
         ### send signal to generate plots
         plot_handler.create_plots()
         ### create custom plot tab
-        new_tab = PlotPanelItem(plot_handler, arbin_test,root=self.root, text=arbin_test.item_ID)
+        new_tab = PlotPanelItem(plot_handler, arbin_test,root=self.root, text='{} (Ch. {})'.format(arbin_test.item_ID, arbin_test.arbin_ID))
         ### add tab to tabbed panel
         self.plot_panel.add_widget(new_tab)
         new_tab.on_release()

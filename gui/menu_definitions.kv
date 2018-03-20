@@ -9,20 +9,33 @@
      halign: 'left'
      valign: 'middle'
 
+<SideBarToggle@ToggleButton>:
+     text_size: self.size
+     size_hint_y: 0.15
+     padding: 15, 15
+     halign: 'left'
+     valign: 'middle'
+
 <SideBar@BoxLayout>:
      orientation: 'vertical'
+     Button:
+          text: ''
      SideBarButton:
           text: 'Load File'
           size_hint_y: None
           height: 35
           on_press: dialog = filechooser.FileDialog(app.load_data_file); dialog.load_file(configuration.parser['settings']['data_location'])
      SideBarButton:
-          text: ''
-     SideBarButton:
           size_hint_y: None
           height: 35
           text: 'Plot Selected'
           on_press: app.plot_selected()
+     SideBarToggle:
+          size_hint_y: None
+          height: 35
+          id: autopopulate
+          text: 'Autopopulate'
+          state: 'down'
 
 <TreeViewButton>:
      size_hint_y: 0.1
@@ -40,6 +53,7 @@
      orientation:'horizontal'
      SideBar:
           size_hint_x: 0.2
+          id: sidebar
      ScrollTree:
           id: scrolltree
 
@@ -48,6 +62,7 @@
 
 <PlotTabbedPanel>:
      do_default_tab: False
+     tab_width: 150
 
 <PlotTab>:
      orientation: 'horizontal'
@@ -70,7 +85,7 @@
                size_hint_y: None
                height: 60
                Label:
-                    text: "Milestone Ref.:"
+                    text: "Target:"
                TextInput:
                     text: ' (mAh/g)'
                     multiline: False

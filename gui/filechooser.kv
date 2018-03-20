@@ -4,6 +4,12 @@
         size: root.size
         pos: root.pos
         orientation: "vertical"
+        TextInput:
+            multiline: False
+            text: 'Search'
+            size_hint_y: None
+            height: 30
+            on_text_validate: root.ids.filechooser.filters = ['*{}*'.format(self.text)]
         FileChooserListView:
             id: filechooser
             on_submit: root.load(self.path, self.selection)

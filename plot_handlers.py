@@ -185,7 +185,7 @@ class PyPlotHandler(PlotHandler):
                     milestone_label = str(milestone) + ' mAh/g'
                     ref = [milestone, milestone]
 
-                    self.ref_line, = stepq_plot.plot([t[0], max(t)], ref, color='0.5', label='Milestone')
+                    self.ref_line, = stepq_plot.plot([t[0], max(t)], ref, color='0.5', label='Target')
 
                 else: pass
             else: pass
