@@ -69,11 +69,11 @@ class DataApp(App):
 
         '''
         ### get map of tests and generate arbin tests ###
-        if file in self.added_files:
-            print('File already plotted')
-            return
-        else:
-            self.added_files.append(file)
+        # if file in self.added_files:
+        #     print('File already plotted')
+        #     return
+        # else:
+        #     self.added_files.append(file)
         try:
             test_map = self.control_module.test_mapper.generate_data_mapping(file)
             tests = self.control_module.test_mapper.generate_arbin_tests(test_map)
