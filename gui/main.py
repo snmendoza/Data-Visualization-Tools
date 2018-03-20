@@ -115,11 +115,11 @@ class DataApp(App):
             pass
 
         ### get arbin test from node
-        if selected_test.text in self.plotted_files:
-            print('File already plotted')
-            return
-        else:
-            self.plotted_files.append(selected_test.text)
+        # if selected_test.text in self.plotted_files:
+        #     print('File already plotted')
+        #     return
+        # else:
+        #     self.plotted_files.append(selected_test.text)
         arbin_test = selected_test.node_object
 
         # create plot handler from arbin test
