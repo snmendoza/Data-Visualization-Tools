@@ -120,6 +120,9 @@ class DataApp(App):
         #     return
         # else:
         #     self.plotted_files.append(selected_test.text)
+        if not hasattr(selected_test, 'node_object'):
+            print(selected_test, 'has no "node object"')
+            return
         arbin_test = selected_test.node_object
 
         # create plot handler from arbin test

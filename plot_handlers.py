@@ -159,6 +159,7 @@ class PyPlotHandler(PlotHandler):
         '''
         To redraw with mass:
         '''
+        electrode_reference = {'Anode': 1200, 'Cathode': 120, 'Full': 700}
 
         stepq_plot = self.ax2 # get a reference to the axes object
 
@@ -174,21 +175,20 @@ class PyPlotHandler(PlotHandler):
 
             # get active material weight
             mass_header = configuration.parser['settings']['mass_header']
-            if test.cell_build_info is not None:
-                if str(test.cell_build_info[mass_header]) != '':
-                    mass = float(test.cell_build_info[mass_header]) / 1000
-                    qc = qc / mass
-                    qd = qd / mass
-                    stepq_plot.set_ylabel('Capacity (mAh/g)')
-                    electrode_reference = {'Anode': 1200, 'Cathode': 120, 'Full': 700}
-                    milestone = electrode_reference[self.tests[0].electrode_type]
-                    milestone_label = str(milestone) + ' mAh/g'
-                    ref = [milestone, milestone]
+            if test.cell_build_info is not None and str(test.cell_build_info[mass_header]) != '':
+                mass = float(test.cell_build_info[mass_header]) / 1000
+                qc = qc / mass
+                qd = qd / mass
+                stepq_plot.set_ylabel('Capacity (mAh/g)')
 
-                    self.ref_line, = stepq_plot.plot([t[0], max(t)], ref, color='0.5', label='Target')
+                milestone = electrode_reference[self.tests[0].electrode_type]
+                milestone_label = str(milestone) + ' mAh/g'
+                ref = [milestone, milestone]
+                self.ref_line, = stepq_plot.plot([t[0], max(t)], ref, color='0.5', label='Target')
 
-                else: pass
-            else: pass
+            else:
+                self.ref_line, = stepq_plot.plot([t[0], max(t)], [0,0], color='0.5', label='Target')
+
             #Plot the data
             test.qc_plot, = stepq_plot.plot(t, qc, marker='o', ls='', color=burgundy, label='Charge Capacity')
             test.qd_plot, = stepq_plot.plot(t, qd, marker='o', ls='', color=dark_green, label='Discharge Capacity')

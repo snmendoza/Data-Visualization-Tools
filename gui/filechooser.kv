@@ -9,7 +9,7 @@
             text: 'Search'
             size_hint_y: None
             height: 30
-            on_text_validate: root.ids.filechooser.filters = ['*{}*'.format(self.text)]
+            on_text_validate: filechooser.filters = ['*{}*'.format(self.text)]
         FileChooserListView:
             id: filechooser
             on_submit: root.load(self.path, self.selection)
@@ -22,4 +22,4 @@
 
             Button:
                 text: "Load"
-                on_release: root.ids.filechooser.on_submit(filechooser.path, filechooser.selection)
+                on_release: root.load(filechooser.path, filechooser.selection)
