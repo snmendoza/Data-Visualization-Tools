@@ -12,6 +12,7 @@
             on_text_validate: filechooser.filters = ['*{}*'.format(self.text)]
         FileChooserListView:
             id: filechooser
+            filter_dirs: True
             on_submit: root.load(self.path, self.selection)
         BoxLayout:
             size_hint_y: None
