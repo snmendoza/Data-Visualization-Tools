@@ -1,4 +1,4 @@
-
+#: import FileChooserListView  kivy.uix.filechooser.FileChooserListView
 <LoadDialog>:
     BoxLayout:
         size: root.size
@@ -10,9 +10,20 @@
             size_hint_y: None
             height: 30
             on_text_validate: filechooser.filters = ['*{}*'.format(self.text)]
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint_y: None
+            height: 30
+            Button:
+                text: 'Sort Chronological'
+                on_release: setattr(filechooser, 'sort_func', root.sort_by_date); filechooser._update_files()
+            Button
+                text: 'Sort Alphabetical'
+                on_release:setattr(filechooser, 'sort_func', root.sort_default); filechooser._update_files()
         FileChooserListView:
             id: filechooser
             filter_dirs: True
+            sort_func: root.sort_by_date
             on_submit: root.load(self.path, self.selection)
         BoxLayout:
             size_hint_y: None

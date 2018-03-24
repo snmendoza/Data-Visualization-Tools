@@ -143,7 +143,15 @@ class DataApp(App):
         self.plot_panel.add_widget(new_tab)
         new_tab.on_release()
 
-
+    def remove_tab(self, *args):
+        tabbed_panel = self.plot_panel
+        selected_tab = tabbed_panel.current_tab
+        if selected_tab:
+            selected_tab.clear_widgets()
+            tabbed_panel.remove_widget(selected_tab)
+        # self.plotted_files.remove = []
+        # self.added_files.remove = []
+        #
 def build_app(control_module):
     main_app = DataApp()
     setattr(main_app, 'control_module', control_module)

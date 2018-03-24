@@ -14,6 +14,12 @@ class LoadDialog(FloatLayout):
     load = ObjectProperty(None)
     cancel = ObjectProperty(None)
 
+    def sort_by_date(self, names_list, filesystem):
+        return sorted(names_list, key=lambda fi: os.stat(fi).st_mtime, reverse = True)
+
+    def sort_default(self, names_list, filesystem):
+        return sorted(names_list)
+
 class FileDialog(object):
     def __init__(self, call=None):
         self.call = call
@@ -31,7 +37,7 @@ class FileDialog(object):
         self._popup.open()
 
     def load(self, path, filename):
-        self.dismiss_popup()
+        self._popup.dismiss()
         if self.call:
             self.call(filename)
 
