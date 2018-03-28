@@ -28,8 +28,8 @@
      SideBarButton:
           size_hint_y: None
           height: 35
-          text: 'Remove Tab'
-          on_press: app.remove_tab()
+          text: ''
+          on_press:pass# app.remove_tab()
      SideBarToggle:
           size_hint_y: None
           height: 35
@@ -42,6 +42,7 @@
 
 <CustomTreeView>:
      app: app
+
 <ScrollTree@ScrollView>:
      CustomTreeView:
           id: treeview
@@ -63,6 +64,28 @@
 <PlotTabbedPanel>:
      do_default_tab: False
      tab_width: 150
+
+<CloseableHeaderOverLay@BoxLayout>:
+     pos: root.apparent.pos
+     size_hint: None, None
+     size: root.apparent.size
+     padding: 3
+     orientation: 'horizontal'
+     Label:
+          id:lbl
+          text: root.apparent.text
+     Button:
+          size_hint: None, 1
+          width: 22
+          text: 'X'
+          color: 0.7, 0.2, 0.2, 0.7
+          on_release: app.remove_tab(tab=root.apparent)
+
+<PlotPanelItem>:
+     color: 0,0,0,0
+     disabled_color: self.color
+     size_hint_x: None
+     width: self.texture_size[0] + 40
 
 <PlotTab>:
      orientation: 'horizontal'

@@ -6,11 +6,13 @@ corresponding .kv file contains graphical setup and descriptions.
 ### properties
 from kivy.properties import ObjectProperty
 ###
+from kivy.lang import Builder
 from kivy.clock import Clock
 from kivy._clock import ClockEvent
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.button import Button
+from kivy.uix.togglebutton import ToggleButton
 from kivy.uix.treeview import TreeViewNode, TreeViewLabel, TreeView
 from kivy.uix.label import Label
 from kivy.uix.tabbedpanel import TabbedPanel, TabbedPanelItem, TabbedPanelHeader
@@ -22,6 +24,7 @@ from time import time
 from os import startfile
 import configuration
 
+Builder.load_file(r'gui\menu_definitions.kv')
 
 class MenuBar(BoxLayout):
     scrolltree = ObjectProperty(None)
@@ -45,9 +48,16 @@ class PlotTab(BoxLayout):
         super().__init__(*args, **kwargs)
         self.actual_parent = actual_parent
 
+class CloseableHeaderOverLay(BoxLayout):
+    def __init__(self, parent, *args, **kwargs):
+        self.apparent = parent
+        super().__init__(*args, **kwargs)
+
+
 class PlotPanelItem(TabbedPanelItem):
     def __init__(self, plot_handler, arbin_test,root=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        TabbedPanelHeader.add_widget(self, CloseableHeaderOverLay(self))
         ### input parameters
         self.plot_handler = plot_handler
         self.arbin_test = arbin_test
@@ -75,6 +85,22 @@ class PlotPanelItem(TabbedPanelItem):
         except Exception as e:
             print(e)
         self.plt_canvas = canvas
+
+    def add_widget(self, widget, index=0):
+        self.content = widget
+        if not self.parent:
+            return
+        panel = self.parent.tabbed_panel
+        if panel.current_tab == self:
+            panel.switch_to(self)
+
+    def remove_widget(self, widget):
+        self.content = None
+        if not self.parent:
+            return
+        panel = self.parent.tabbed_panel
+        if panel.current_tab == self:
+            panel.remove_widget(widget)
 
     def on_release(self, *largs):
         # Tabbed panel header is a child of tab_strib which has a

@@ -143,15 +143,29 @@ class DataApp(App):
         self.plot_panel.add_widget(new_tab)
         new_tab.on_release()
 
-    def remove_tab(self, *args):
-        tabbed_panel = self.plot_panel
-        selected_tab = tabbed_panel.current_tab
-        if selected_tab:
-            selected_tab.clear_widgets()
-            tabbed_panel.remove_widget(selected_tab)
-        # self.plotted_files.remove = []
-        # self.added_files.remove = []
-        #
+    def remove_tab(self, *args, **kwargs):
+        try:
+            tabbed_panel = self.plot_panel
+            if 'tab' in kwargs:
+                tab = kwargs['tab']
+            else:
+                return
+            tabbed_panel.remove_widget(tab)
+
+        except Exception as E:
+            print(E, 'failed to remove tab')
+
+        else:
+            selected_tab = tabbed_panel.current_tab
+            if selected_tab == tab:
+                if len(tabbed_panel.tab_list) < 1:
+                    return
+                else:
+                    tabbed_panel.switch_to(tabbed_panel.tab_list[-1])
+            else:
+                return
+
+
 def build_app(control_module):
     main_app = DataApp()
     setattr(main_app, 'control_module', control_module)
