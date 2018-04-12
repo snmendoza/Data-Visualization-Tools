@@ -12,7 +12,7 @@ from kivy.uix.popup import Popup
 from collections import OrderedDict as OrDict
 from . menu_definitions import * # custom kivy nav bar
 from os.path import basename
-import kivy.garden.contextmenu
+#import kivy.garden.contextmenu
 from kivy.uix.floatlayout import FloatLayout
 from kivy.core.window import Window
 from . import filechooser
