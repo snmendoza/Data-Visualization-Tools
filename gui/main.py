@@ -183,6 +183,8 @@ class DataApp(App):
             self.plot_panel.remove_widget(tab)
         self.plot_panel.clear_widgets()
         self.root.ids.nav_bar.clear_widgets()
+        for node in self.file_tree.iterate_all_nodes():
+            self.file_tree.remove_node(node)
 
     def key_down_action(self, window, keyboard, keycode, text, modifiers):
         if len(modifiers) == 1 and 'ctrl' in modifiers: # commands for control being held down
