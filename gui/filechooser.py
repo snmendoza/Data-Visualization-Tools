@@ -4,7 +4,9 @@ from kivy.factory import Factory
 from kivy.properties import ObjectProperty
 from kivy.uix.popup import Popup
 from kivy.uix.button import Button
+from kivy.uix.label import Label
 from kivy.lang import Builder
+from kivy.clock import Clock
 import os
 
 Builder.load_file(r'gui\filechooser.kv')
@@ -23,8 +25,8 @@ class LoadDialog(FloatLayout):
 class FileDialog(object):
     def __init__(self, call=None):
         self.call = call
-
-    def dismiss_popup(self):
+        self.block = False
+    def dismiss_popup(self, *args):
         self._popup.dismiss()
 
     def load_file(self, directory=None):
@@ -36,10 +38,16 @@ class FileDialog(object):
                             size_hint=(0.9, 0.9))
         self._popup.open()
 
-    def load(self, path, filename):
-        self._popup.dismiss()
-        if self.call:
-            self.call(filename)
+    def load(self, filename):
+        if not self.block:
+            self.block = True
+            if self.call:
+                self.call(filename)
+            self.block = False
+            self.dismiss_popup()
+        else:
+            return
+
 
 
 class FileDialogButton(Button):

@@ -8,20 +8,25 @@ Config.set('kivy','exit_on_escape', 0)
 
 from kivy.app import App
 from kivy.lang import Builder
+from kivy.uix.popup import Popup
 from collections import OrderedDict as OrDict
 from . menu_definitions import * # custom kivy nav bar
 from os.path import basename
-
+import kivy.garden.contextmenu
+from kivy.uix.floatlayout import FloatLayout
+from kivy.core.window import Window
+from . import filechooser
+import win32com.client
 
 import matplotlib
 matplotlib.use('module://kivy.garden.matplotlib.backend_kivy')
 from kivy.garden.matplotlib.backend_kivy import FigureCanvas
 
-
+class Root(FloatLayout): pass
 class DataApp(App):
 
     def build(self, control_module = None):
-
+        Window.bind(on_key_down=self.key_down_action)
         self.root = Root()
         self.icon = 'icon.png'
 
@@ -36,6 +41,14 @@ class DataApp(App):
         #plotting area
         self.plot_panel = self.root.ids.PlotPanel
         return self.root
+
+    def load_active_workbook(self, *args):
+        try:
+            xl = win32com.client.Dispatch('Excel.Application')
+            wb = xl.ActiveWorkbook.FullName
+            self.load_data_file([wb])
+        except Exception as e:
+            print('Failed to retrieve active excel workbook', e)
 
     def load_data_file(self, file_list):
         '''
@@ -52,14 +65,13 @@ class DataApp(App):
                     node = self.send_to_tree(file)
                 except Exception as e:
                     print('failed to parse {} to file tree'.format(file), e)
+            # TODO write autpopulate setting
+            # if self.root.ids.menubar.ids.sidebar.ids.autopopulate.state == 'down' and node:
+            nodes = node.nodes
+            for node in nodes:
+                self.plot_selected(selection = node)
         except Exception as e:
             print(e)
-        else:
-            if self.root.ids.menubar.ids.sidebar.ids.autopopulate.state == 'down' and node:
-                nodes = node.nodes
-                for node in nodes:
-                    self.plot_selected(selection = node)
-
 
     def send_to_tree(self, file):
         '''
@@ -159,12 +171,28 @@ class DataApp(App):
             selected_tab = tabbed_panel.current_tab
             if selected_tab == tab:
                 if len(tabbed_panel.tab_list) < 1:
-                    return
+                    tabbed_panel.clear_widgets()
+                    self.root.ids.nav_bar.clear_widgets()
                 else:
                     tabbed_panel.switch_to(tabbed_panel.tab_list[-1])
             else:
                 return
 
+    def remove_all_tabs(self, *args):
+        for tab in self.plot_panel.tab_list:
+            self.plot_panel.remove_widget(tab)
+        self.plot_panel.clear_widgets()
+        self.root.ids.nav_bar.clear_widgets()
+
+    def key_down_action(self, window, keyboard, keycode, text, modifiers):
+        if len(modifiers) == 1 and 'ctrl' in modifiers: # commands for control being held down
+            if text == 'o':
+                dialog = filechooser.FileDialog(self.load_data_file)
+                dialog.load_file(configuration.parser['settings']['data_location'])
+            else:
+                pass
+        else:
+            pass
 
 def build_app(control_module):
     main_app = DataApp()

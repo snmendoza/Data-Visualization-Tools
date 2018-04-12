@@ -113,7 +113,7 @@ class PlotPanelItem(TabbedPanelItem):
         else:
             # tab removed before we could switch to it. Switch back to
             # previous tab
-
+            
             self.panel.switch_to(self.panel.current_tab)
 
     def update_mass(self, instance):

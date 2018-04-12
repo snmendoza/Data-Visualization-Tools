@@ -1,15 +1,69 @@
 
+#: import filechooser gui.filechooser
+<Root@FloatLayout>:
+     id: layout
 
+     ActionBar:
+          pos_hint: {'top':1}
+          ActionView:
+               use_separator: True
+               ActionPrevious:
+                    title: 'Action Bar'
+                    with_previous: False
+               ActionOverflow:
+               ActionGroup:
+                    text: 'Load'
+                    mode: 'spinner'
+                    dropdown_width: 100
+                    ActionButton:
+                         text: 'From File'
+                         on_release: dialog = filechooser.FileDialog(app.load_data_file); dialog.load_file(configuration.parser['settings']['data_location'])
+                    ActionButton:
+                         text: 'From Excel'
+                         on_release: app.load_active_workbook()
+               ActionButton:
+                    text: 'Clear All'
+                    on_release: app.remove_all_tabs()
+               ActionGroup:
+                    text: 'View'
+                    mode: 'spinner'
+                    ActionButton:
+                         text: 'Excel Data'
 
-<Root@BoxLayout>:
-     height: 1100
-     width: 800
-     orientation: 'vertical'
-     MenuBar:
-          id: menubar
-          size_hint_y: .2
-     PlotTabbedPanel:
-          id: PlotPanel
      BoxLayout:
-          size_hint_y: 0.1
-          id: nav_bar
+          orientation: 'vertical'
+          size_hint: 1,0.9
+          pos: 0,0
+          MenuBar:
+               id: menubar
+               size_hint_y: .2
+          PlotTabbedPanel:
+               id: PlotPanel
+          BoxLayout:
+               size_hint_y: 0.1
+               id: nav_bar
+
+     #                     on_release: dialog = filechooser.FileDialog(app.load_data_file); dialog.load_file(configuration.parser['settings']['data_location'])
+     #      AppMenuTextItem:
+     #           text:'Edit'
+     #           ContextMenu:
+     #                ContextMenuTextItem:
+     #                     text: 'Clear Tests (pending)'
+     #      AppMenuTextItem:
+     #           text:'View'
+     #           ContextMenu:
+     #                ContextMenuTextItem:
+     #                     text: 'View data in Excel (pending)'
+     #                ContextMenuTextItem:
+     #                     text: 'View cell info in database (pending)'
+     #      AppMenuTextItem:
+     #           text:'Tools'
+     #           ContextMenu:
+     #                ContextMenuTextItem:
+     #                     text: 'pending'
+     #
+     #      AppMenuTextItem:
+     #           text:'Help'
+     #           ContextMenu:
+     #                ContextMenuTextItem:
+     #                     text: 'Contact sean@sienzaenergy.com'

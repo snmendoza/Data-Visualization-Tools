@@ -24,7 +24,7 @@
             id: filechooser
             filter_dirs: True
             sort_func: root.sort_by_date
-            on_submit: root.load(self.path, self.selection)
+            on_submit: root.load(self.selection)
         BoxLayout:
             size_hint_y: None
             height: 30
@@ -34,4 +34,4 @@
 
             Button:
                 text: "Load"
-                on_release: root.load(filechooser.path, filechooser.selection)
+                on_release: print(1); root.load(filechooser.selection); print(2)
