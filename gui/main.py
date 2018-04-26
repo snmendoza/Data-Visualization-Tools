@@ -1,3 +1,4 @@
+## pre-configuration
 import kivy
 kivy.require('1.10.0')
 from kivy.config import Config
@@ -5,24 +6,33 @@ Config.set('graphics', 'width', '800')
 Config.set('graphics', 'height', '1100')
 Config.set('input', 'mouse', 'mouse,multitouch_on_demand')
 Config.set('kivy','exit_on_escape', 0)
-
+##
+## module imports
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.uix.popup import Popup
-from collections import OrderedDict as OrDict
-from . menu_definitions import * # custom kivy nav bar
-from os.path import basename
-#import kivy.garden.contextmenu
 from kivy.uix.floatlayout import FloatLayout
 from kivy.core.window import Window
-from . import filechooser
+from kivy.uix.popup import Popup
+from os.path import basename
 import win32com.client
-
 import matplotlib
+from collections import OrderedDict as OrDict
+##
+## local imports
+from . menu_definitions import * # custom kivy nav bar
+from . comparator import *
+#import kivy.garden.contextmenu
+from . import filechooser
+##
+## setup
 matplotlib.use('module://kivy.garden.matplotlib.backend_kivy')
 from kivy.garden.matplotlib.backend_kivy import FigureCanvas
+##
+
 
 class Root(FloatLayout): pass
+
 class DataApp(App):
 
     def build(self, control_module = None):
@@ -43,12 +53,22 @@ class DataApp(App):
         return self.root
 
     def load_active_workbook(self, *args):
+        popup_label = Label(text='Opening File...')
+        popup = Popup(title='Loading', content=popup_label, auto_dismiss=False)
+        popup.open()
         try:
+            popup_label.text = 'Getting Workbook name'
             xl = win32com.client.Dispatch('Excel.Application')
             wb = xl.ActiveWorkbook.FullName
+            popup_label.text = 'Loading Data...'
             self.load_data_file([wb])
+            popup_label.text = 'Done'
         except Exception as e:
+            popup_label.text = 'Failed: {}'.format(e)
             print('Failed to retrieve active excel workbook', e)
+            popup.auto_dismiss = True
+        else:
+            popup.dismiss()
 
     def load_data_file(self, file_list):
         '''
@@ -171,20 +191,23 @@ class DataApp(App):
             selected_tab = tabbed_panel.current_tab
             if selected_tab == tab:
                 if len(tabbed_panel.tab_list) < 1:
-                    tabbed_panel.clear_widgets()
-                    self.root.ids.nav_bar.clear_widgets()
+                    self.remove_all_tabs()
+                    # tabbed_panel.clear_widgets()
+                    # self.root.ids.nav_bar.clear_widgets()
                 else:
                     tabbed_panel.switch_to(tabbed_panel.tab_list[-1])
             else:
                 return
 
     def remove_all_tabs(self, *args):
-        for tab in self.plot_panel.tab_list:
+        nodes = [i for i in self.file_tree.iterate_all_nodes()]
+        tabs = [i for i in self.plot_panel.tab_list]
+        for tab in tabs:
             self.plot_panel.remove_widget(tab)
+        for node in nodes:
+            self.file_tree.remove_node(node)
         self.plot_panel.clear_widgets()
         self.root.ids.nav_bar.clear_widgets()
-        for node in self.file_tree.iterate_all_nodes():
-            self.file_tree.remove_node(node)
 
     def key_down_action(self, window, keyboard, keycode, text, modifiers):
         if len(modifiers) == 1 and 'ctrl' in modifiers: # commands for control being held down
@@ -195,6 +218,10 @@ class DataApp(App):
                 pass
         else:
             pass
+
+    def open_comparator(self, *args):
+        comparison_popup = ComparatorPopup()
+        comparison_popup.open()
 
 def build_app(control_module):
     main_app = DataApp()

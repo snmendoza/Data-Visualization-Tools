@@ -1,0 +1,44 @@
+
+
+<ComparatorContent@BoxLayout>:
+     orientation: 'horizontal'
+     BoxLayout:
+          size_hint_x: 0.4
+          orientation: 'vertical'
+          Label:
+               text: 'Available Data'
+               size_hint_y : 0.1
+          Label:
+               text: 'list view goes here'
+          Button:
+               text: 'Finish'
+               size_hint_y: 0.1
+     BoxLayout:
+          size_hint_x: 0.2
+          orientation: 'vertical'
+          Widget:
+               size_hint_y: 0.4
+          Button:
+               text: '>'
+               size_hint_y: 0.1
+          Button:
+               text: '<'
+               size_hint_y: 0.1
+          Widget:
+               size_hint_y: 0.4
+
+     BoxLayout:
+          size_hint_x: 0.4
+          orientation: 'vertical'
+          Label:
+               text: 'Selected Data'
+               size_hint_y : 0.1
+          Label:
+               text: 'list view goes here'
+          Button:
+               text: 'Finish'
+               size_hint_y: 0.1
+
+<Comparator@Popup>
+     size_hint: 0.8, 0.8
+     title: 'Cell Comparison Tool'
