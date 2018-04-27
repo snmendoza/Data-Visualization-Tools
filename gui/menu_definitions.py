@@ -16,14 +16,14 @@ from kivy.uix.togglebutton import ToggleButton
 from kivy.uix.treeview import TreeViewNode, TreeViewLabel, TreeView
 from kivy.uix.label import Label
 from kivy.uix.tabbedpanel import TabbedPanel, TabbedPanelItem, TabbedPanelHeader
-from kivy.garden.matplotlib.backend_kivyagg import FigureCanvas,\
+from kivy.garden.matplotlib.backend_kivy import FigureCanvas,\
                                                 NavigationToolbar2Kivy
 
 from functools import partial
 from time import time
 from os import startfile
 import configuration
-from matplotlib import pyplot as plt
+# from matplotlib import pyplot as plt
 
 Builder.load_file(r'gui\menu_definitions.kv')
 
@@ -66,7 +66,7 @@ class PlotPanelItem(TabbedPanelItem):
 
         ### get items to create plot tab
         figure = self.plot_handler.figure
-        self.figure = figure
+        # self.figure = figure
         canvas = FigureCanvas(figure)
 
         ### define plot tab and add to self
@@ -176,8 +176,8 @@ class PlotPanelItem(TabbedPanelItem):
         self.plt_canvas.draw()
         return True
 
-    def clear(self, *args):
-        plt.close(self.figure)
+    def clear(self, *args): pass
+        # plt.close(self.figure)
 
 
 
