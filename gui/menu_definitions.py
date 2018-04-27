@@ -23,6 +23,7 @@ from functools import partial
 from time import time
 from os import startfile
 import configuration
+from matplotlib import pyplot as plt
 
 Builder.load_file(r'gui\menu_definitions.kv')
 
@@ -65,6 +66,7 @@ class PlotPanelItem(TabbedPanelItem):
 
         ### get items to create plot tab
         figure = self.plot_handler.figure
+        self.figure = figure
         canvas = FigureCanvas(figure)
 
         ### define plot tab and add to self
@@ -113,7 +115,7 @@ class PlotPanelItem(TabbedPanelItem):
         else:
             # tab removed before we could switch to it. Switch back to
             # previous tab
-            
+
             self.panel.switch_to(self.panel.current_tab)
 
     def update_mass(self, instance):
@@ -174,6 +176,8 @@ class PlotPanelItem(TabbedPanelItem):
         self.plt_canvas.draw()
         return True
 
+    def clear(self, *args):
+        plt.close(self.figure)
 
 
 
