@@ -8,8 +8,6 @@ Config.set('input', 'mouse', 'mouse,multitouch_on_demand')
 Config.set('kivy','exit_on_escape', 0)
 ##
 ## module imports
-import threading
-from functools import partial
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.uix.popup import Popup
@@ -55,22 +53,22 @@ class DataApp(App):
         return self.root
 
     def load_active_workbook(self, *args):
-        ### get file name
+        popup_label = Label(text='Opening File...')
+        popup = Popup(title='Loading', content=popup_label, auto_dismiss=False)
+        popup.open()
         try:
+            popup_label.text = 'Getting Workbook name'
             xl = win32com.client.Dispatch('Excel.Application')
             wb = xl.ActiveWorkbook.FullName
+            popup_label.text = 'Loading Data...'
+            self.load_data_file([wb])
+            popup_label.text = 'Done'
         except Exception as e:
+            popup_label.text = 'Failed: {}'.format(e)
             print('Failed to retrieve active excel workbook', e)
-            popup_label = Label(text='Failed to retrieve Excel WB.\n(Click outside popup to dismiss)')
-            popup = Popup(title='Error', content=popup_label, auto_dismiss=True,size_hint=(None, None), size=(400, 300))
-            popup.open()
+            popup.auto_dismiss = True
         else:
-            print('Loading {}'.format(wb))
-            popup_label = Label(text='Opening File...')
-            popup = Popup(title='Loading', content=popup_label, auto_dismiss=False,size_hint=(None, None), size=(400, 300))
-            popup.open()
-            open_thread = threading.Thread(target=partial(self.load_file_list,[wb], popup))
-            open_thread.start()
+            popup.dismiss()
 
     def load_data_file(self, file_list):
         '''
@@ -78,21 +76,9 @@ class DataApp(App):
         file_list should simply be a list of files -  but it is a kivy observable list,
         not an actual list apparently
         '''
-        print('Loading {}'.format(file_list))
-        popup_label = Label(text='Opening File...')
-        popup = Popup(title='Loading', content=popup_label, auto_dismiss=False,size_hint=(None, None), size=(400, 300))
-        popup.open()
-        open_thread = threading.Thread(target=partial(self.load_file_list,file_list, popup))
-        open_thread.start()
+        print(file_list)
 
 
-    def load_file_list(self, file_list, popup=None):
-        if len(file_list) < 1:
-            popup_label = Label(text='No Selection Made!.\n(Click outside popup to dismiss)')
-            error_popup = Popup(title='Error', content=popup_label, auto_dismiss=True,size_hint=(None, None), size=(400, 300))
-            error_popup.open()
-            popup.dismiss()
-            return False
         try: # catch iteration error
             for file in file_list:
                 try: # catching file parsin error
@@ -102,18 +88,10 @@ class DataApp(App):
             # TODO write autpopulate setting
             # if self.root.ids.menubar.ids.sidebar.ids.autopopulate.state == 'down' and node:
             nodes = node.nodes
-            for index, node in enumerate(nodes):
-                if popup:
-                    popup.content.text = 'Getting Data for {}...'.format(node.text)
-                self.plot_selected(selection = node, popup=popup)
+            for node in nodes:
+                self.plot_selected(selection = node)
         except Exception as e:
             print(e)
-            if popup:
-                popup.content.text = 'Failed to load: {}\n(Click outside popup to dismiss)'.format(str(e))
-                popup.auto_dismiss = True
-        else:
-            if popup:
-                popup.dismiss()
 
     def send_to_tree(self, file):
         '''
@@ -146,7 +124,7 @@ class DataApp(App):
             return node
         ####
 
-    def plot_selected(self, selection = None, popup=None):
+    def plot_selected(self, selection = None):
         '''
         Trigger to main app to plot selected files from tree view
         no inputs, no outputs
@@ -226,8 +204,6 @@ class DataApp(App):
         tabs = [i for i in self.plot_panel.tab_list]
         for tab in tabs:
             self.plot_panel.remove_widget(tab)
-            if hasattr(tab, 'clear'):
-                tab.clear()
         for node in nodes:
             self.file_tree.remove_node(node)
         self.plot_panel.clear_widgets()
@@ -244,9 +220,7 @@ class DataApp(App):
             pass
 
     def open_comparator(self, *args):
-        tests = [i for i in self.plot_panel.tab_list] # of type plottab
-        available_tests = [{'text': test.text, 'test':test} for test in tests]
-        comparison_popup = ComparatorPopup(available_tests)
+        comparison_popup = ComparatorPopup()
         comparison_popup.open()
 
 def build_app(control_module):

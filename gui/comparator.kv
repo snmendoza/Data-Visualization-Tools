@@ -1,32 +1,6 @@
 
 
-<SelectableRow@BoxLayout>:
-     canvas.before:
-          Color:
-               rgba: (.0, 0.9, .1, .3) if self.selected else (0, 0, 0, 1)
-          Rectangle:
-               size: self.size
-               pos: self.pos
-     # value: ''
-     text:  'No text'
-     Label:
-          text: root.text
-
-<MyRecycleView>:
-     viewclass: 'SelectableRow'
-     rgrid: rgrid
-     SelectableRecycleGridLayout:
-          id: rgrid
-          cols: 1
-          default_size: None, dp(56)
-          default_size_hint: 1, None
-          size_hint_y: None
-          height: self.minimum_height
-          orientation: 'vertical'
-          spacing: dp(2)
-          multiselect: True
-
-<ComparatorContentOne@BoxLayout>:
+<ComparatorContent@BoxLayout>:
      orientation: 'horizontal'
      BoxLayout:
           size_hint_x: 0.4
@@ -34,13 +8,11 @@
           Label:
                text: 'Available Data'
                size_hint_y : 0.1
-          MyRecycleView:
-               id: available_list
-               data: root.popup.available_tests
+          Label:
+               text: 'list view goes here'
           Button:
-               text: 'Exit'
+               text: 'Finish'
                size_hint_y: 0.1
-               on_release: root.popup.dismiss()
      BoxLayout:
           size_hint_x: 0.2
           orientation: 'vertical'
@@ -61,10 +33,10 @@
           Label:
                text: 'Selected Data'
                size_hint_y : 0.1
-          MyRecycleView:
-               id: selected_list
+          Label:
+               text: 'list view goes here'
           Button:
-               text: 'Done'
+               text: 'Finish'
                size_hint_y: 0.1
 
 <Comparator@Popup>
