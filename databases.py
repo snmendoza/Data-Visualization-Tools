@@ -17,10 +17,38 @@ etc.
 
 class TestCellData(object):
     def __init__(self, filepath):
-        excel_file = pd.ExcelFile(filepath)
-        self.anodes = excel_file.parse('Anode Cell', skiprows=1)
-        self.cathodes = excel_file.parse('Cathode Cell', skiprows=1)
-        self.full_cells = excel_file.parse('Full Cell')
+        self.filepath = filepath
+        self.excel_file = self.reload_database(filepath = self.filepath)
+
+    def reload_database(self, filepath = None):
+        if not filepath:
+            filepath = self.filepath
+        else:
+            pass
+
+        try:
+            excel_file = pd.ExcelFile(filepath)
+        except Exception as e:
+            print('Failed to Load Excel DB:', e)
+
+        try:
+            self.anodes = excel_file.parse('Anode Cell', skiprows=1)
+        except Exception as e:
+            print('Failed to DB Anode Sheet:', e)
+
+        try:
+            self.cathodes = excel_file.parse('Cathode Cell', skiprows=1)
+        except Exception as e:
+            print('Failed to Load DB Cathode Sheet', e)
+
+        try:
+            self.full_cells = excel_file.parse('Full Cell')
+        except Exception as e:
+            print('Failed to Load DB Full-Cell sheet:', e)
+
+        return excel_file
+
+
 
 
 parser = configuration.parser

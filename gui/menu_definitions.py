@@ -176,8 +176,6 @@ class PlotPanelItem(TabbedPanelItem):
         self.plt_canvas.draw()
         return True
 
-    def clear(self, *args): pass
-        # plt.close(self.figure)
 
 
 

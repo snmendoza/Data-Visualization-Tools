@@ -98,7 +98,6 @@ class DataApp(App):
         Send input file to opened file tree
         inputs: file path for data (such as arbin .xls)
         outputs: none
-
         '''
         ### get map of tests and generate arbin tests ###
         # if file in self.added_files:
