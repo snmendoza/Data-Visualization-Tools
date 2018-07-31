@@ -14,7 +14,7 @@ from bokeh.models import DataRange1d, LinearAxis
 
 # pyplot imports
 import matplotlib
-matplotlib.use('module://kivy.garden.matplotlib.backend_kivyagg')
+# matplotlib.use('module://kivy.garden.matplotlib.backend_kivyagg')
 
 from matplotlib import pyplot as plt
 import configuration
@@ -26,6 +26,9 @@ dark_green = (0.039,0.369,0.267)
 dark_orange = (0.922,0.345,0.008)
 dark_blue = (0.1, .0, .6)
 
+black = (0.05,0.05,0.5)
+stark_red = (0.5, .05, .05)
+grey = (0.5, 0.5, 0.5)
 
 
 #####  Color Palette by Paletton.com
@@ -151,8 +154,8 @@ class PyPlotHandler(PlotHandler):
             v = test.data['Voltage(V)']
             t = test.data['Test_Time(s)'] / 3600
             #Plot the data
-            v_plot.plot(t, v, color=dark_orange, linewidth=0.6)
-            i_plot.plot(t, i, color=dark_blue, linewidth=0.6)
+            v_plot.plot(t, v, color=black, linewidth=0.6)
+            i_plot.plot(t, i, color=stark_red, linewidth=0.6)
 
 
     def _create_stepQ_plot(self):
@@ -163,14 +166,21 @@ class PyPlotHandler(PlotHandler):
 
         stepq_plot = self.ax2 # get a reference to the axes object
 
+        ### capacity plot
         plt.setp(stepq_plot.get_xticklabels(), visible=False)
         stepq_plot.set_ylabel('Capacity (mAh)')
         stepq_plot.get_yaxis().set_label_coords(-0.07,0.5)
+
+        ### coulombic efficiency plot
+        step_CE_plot = stepq_plot.twinx()
+        step_CE_plot.set_ylabel('Coulombic Efficiency', color = grey)
+
 
         for test in self.tests:
             # retrieve the data
             qc = test.statistics['Charge_Capacity(Ah)'] * 1000
             qd = test.statistics['Discharge_Capacity(Ah)'] * 1000
+            ce = [d / c for d, c in zip(qd, qc)]
             t = test.statistics['Test_Time(s)'] / 3600
 
             # get active material weight
@@ -190,9 +200,9 @@ class PyPlotHandler(PlotHandler):
                 self.ref_line, = stepq_plot.plot([t[0], max(t)], [0,0], color='0.5', label='Target')
 
             #Plot the data
-            test.qc_plot, = stepq_plot.plot(t, qc, marker='o', ls='', color=burgundy, label='Charge Capacity')
-            test.qd_plot, = stepq_plot.plot(t, qd, marker='o', ls='', color=dark_green, label='Discharge Capacity')
-
+            test.qc_plot, = stepq_plot.plot(t, qc, marker='o', ls='', color=dark_orange, label='Charge Capacity')
+            test.qd_plot, = stepq_plot.plot(t, qd, marker='o', ls='', color=dark_blue, label='Discharge Capacity')
+            test.ce_plot, = step_CE_plot.plot(t, ce, marker='o',ls='', markersize=2, markerfacecolor='none', markeredgecolor=grey)
 
         stepq_plot.legend(loc='best')
         stepq_plot.set_ylim(bottom=0)
@@ -350,8 +360,8 @@ class BokehPlotHandler(PlotHandler):
             v = test.data['Voltage(V)']
             t = test.data['Test_Time(s)']
             #Plot the data
-            iv_plot.line(t, v, color=dark_orange, line_width=0.6)
-            iv_plot.line(t, i, color=dark_blue, y_range_name='current')
+            iv_plot.line(t, v, color=black, line_width=0.6)
+            iv_plot.line(t, i, color=stark_red, y_range_name='current')
 
 
     def _create_stepQ_plot(self):

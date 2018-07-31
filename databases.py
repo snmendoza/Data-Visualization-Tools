@@ -30,6 +30,7 @@ class TestCellData(object):
             excel_file = pd.ExcelFile(filepath)
         except Exception as e:
             print('Failed to Load Excel DB:', e)
+            return None
 
         try:
             self.anodes = excel_file.parse('Anode Cell', skiprows=1)

@@ -26,7 +26,7 @@ from . comparator import *
 from . import filechooser
 ##
 ## setup
-matplotlib.use('module://kivy.garden.matplotlib.backend_kivy')
+# matplotlib.use('module://kivy.garden.matplotlib.backend_kivy')
 from kivy.garden.matplotlib.backend_kivy import FigureCanvas
 ##
 
@@ -219,7 +219,14 @@ class DataApp(App):
             pass
 
     def open_comparator(self, *args):
-        comparison_popup = ComparatorPopup()
+        tests = [i for i in self.plot_panel.tab_list] # of type plottab
+        available_tests = [{'text': test.text, 'test':test} for test in tests]
+        if len(available_tests) < 1:
+            warning = Popup(title = 'No Data', size_hint = (0.5, 0.5))
+            warning.content = Label(text = 'No tests available to compare!')
+            warning.open()
+            return
+        comparison_popup = ComparatorPopup(available_tests)
         comparison_popup.open()
 
 def build_app(control_module):

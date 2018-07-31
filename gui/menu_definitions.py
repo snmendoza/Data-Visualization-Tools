@@ -16,7 +16,7 @@ from kivy.uix.togglebutton import ToggleButton
 from kivy.uix.treeview import TreeViewNode, TreeViewLabel, TreeView
 from kivy.uix.label import Label
 from kivy.uix.tabbedpanel import TabbedPanel, TabbedPanelItem, TabbedPanelHeader
-from kivy.garden.matplotlib.backend_kivy import FigureCanvas,\
+from kivy.garden.matplotlib.backend_kivyagg import FigureCanvasKivyAgg,\
                                                 NavigationToolbar2Kivy
 
 from functools import partial
@@ -67,7 +67,7 @@ class PlotPanelItem(TabbedPanelItem):
         ### get items to create plot tab
         figure = self.plot_handler.figure
         # self.figure = figure
-        canvas = FigureCanvas(figure)
+        canvas = FigureCanvasKivyAgg(figure)
 
         ### define plot tab and add to self
         self.plot_tab = PlotTab(actual_parent = self)
