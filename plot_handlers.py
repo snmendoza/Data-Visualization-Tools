@@ -99,6 +99,7 @@ class PyPlotHandler(PlotHandler):
     def __init__(self, tests=[], types=None):
         super().__init__(tests, types)
 
+        self.charts = [] # contains i, v, q, and ce chart refs
         self.gs_data = plt.GridSpec(5, 8, hspace=0.001) # split into 5 rows and 1 column, space for title and table
 
         self.figure = plt.figure(figsize=(8,8))
@@ -133,14 +134,16 @@ class PyPlotHandler(PlotHandler):
 
     def _create_CV_plot(self):
         v_plot = self.ax1 # get a reference to the axes object
-        v_plot.set_ylabel('Voltage', color=dark_orange)
-        v_plot.tick_params('y', colors=dark_orange)
+        self.charts.append(v_plot)
+        v_plot.set_ylabel('Voltage', color=dark_blue)
+        v_plot.tick_params('y', colors=dark_blue)
         v_plot.get_yaxis().set_label_coords(-0.07,0.5)
         plt.setp(v_plot.get_xticklabels(), visible=False)
         # set up the second axis
         i_plot = v_plot.twinx()
-        i_plot.set_ylabel('Current(mA)', color = dark_blue)
-        i_plot.tick_params('y', colors=dark_blue)
+        self.charts.append(i_plot)
+        i_plot.set_ylabel('Current(mA)', color = burgundy)
+        i_plot.tick_params('y', colors=burgundy)
 
         # set up the first axis
 #        v_plot.set_xlabel('Test Time(s)')
@@ -165,6 +168,7 @@ class PyPlotHandler(PlotHandler):
         electrode_reference = {'Anode': 1200, 'Cathode': 120, 'Full': 700}
 
         stepq_plot = self.ax2 # get a reference to the axes object
+        self.charts.append(stepq_plot)
 
         ### capacity plot
         plt.setp(stepq_plot.get_xticklabels(), visible=False)
@@ -173,6 +177,7 @@ class PyPlotHandler(PlotHandler):
 
         ### coulombic efficiency plot
         step_CE_plot = stepq_plot.twinx()
+        self.charts.append(step_CE_plot)
         step_CE_plot.set_ylabel('Coulombic Efficiency', color = grey)
 
 
@@ -202,8 +207,8 @@ class PyPlotHandler(PlotHandler):
             #Plot the data
             test.qc_plot, = stepq_plot.plot(t, qc, marker='o', ls='', color=dark_orange, label='Charge Capacity')
             test.qd_plot, = stepq_plot.plot(t, qd, marker='o', ls='', color=dark_blue, label='Discharge Capacity')
-            test.ce_plot, = step_CE_plot.plot(t, ce, marker='o',ls='', markersize=2, markerfacecolor='none', markeredgecolor=grey)
-
+            test.ce_plot, = step_CE_plot.plot(t, ce, marker='o',ls='', markersize=1.5, markerfacecolor='none', markeredgecolor=grey)
+            # test.ce_plot.set_ylim(0, 1.25)
         stepq_plot.legend(loc='best')
         stepq_plot.set_ylim(bottom=0)
         stepq_plot.set_xlim(left=0)

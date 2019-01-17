@@ -6,7 +6,7 @@
 
 ### import statements ###
 import databases
-
+import numpy as np
 
 class ArbinTest(object):
 
@@ -99,6 +99,114 @@ class ArbinTest(object):
         name_indexed_sheet = sheet.set_index('Cell  Name')
         cell_build_info = name_indexed_sheet.loc[self.item_ID]
         return cell_build_info
+
+    def calculate_power_data(self, *args):
+        schedule_string = self.test_info['Schedule File Name'].lower()
+        if 'power' in schedule_string:
+            print('power test schedule recognized')
+        else:
+            print('power test schedule not recognized')
+            #POPUP
+            return
+
+        if 'cathode' in schedule_string:
+            DCR_SOC0 = 12
+            DCR_SOC50a = 18
+            DCR_SOC50b = 22
+            DCR_SOC100 = 28
+
+            PWR_SOC0 = 14
+            PWR_SOC50a =20
+            PWR_SOC50b = 24
+            PWR_SOC100 = 30
+
+        elif 'anode' in schedule_string:
+            DCR_SOC0 = 11
+            DCR_SOC50a = 17
+            DCR_SOC50b = 21
+            DCR_SOC100 = 27
+
+            PWR_SOC0 = 13
+            PWR_SOC50a = 19
+            PWR_SOC50b = 23
+            PWR_SOC100 = 29
+
+        elif 'full' in schedule_string:
+            print('full cell criteria not yet determined')
+            return
+        else:
+            return
+
+        steps_data = self.data.set_index('Step_Index')
+
+        ### Calculate DCR ###
+        ### DCR = (V2 - V1) / Ip
+
+        DCR = {'SOC 0+1C': self.calculate_DCR(steps_data, DCR_SOC0)
+                ,'SOC 50+1C': self.calculate_DCR(steps_data, DCR_SOC50a)
+                ,'SOC 50-1C': self.calculate_DCR(steps_data, DCR_SOC50b)
+                ,'SOC 100-1C': self.calculate_DCR(steps_data, DCR_SOC100)}
+
+        ###
+
+        ###
+        I = {'SOC 0+1C': self.calculate_I(steps_data, PWR_SOC0)
+                ,'SOC 50+1C': self.calculate_I(steps_data, PWR_SOC50a)
+                ,'SOC 50-1C': self.calculate_I(steps_data, PWR_SOC50b)
+                ,'SOC 100-1C': self.calculate_I(steps_data, PWR_SOC100)}
+
+        ###
+        ###
+
+        return DCR, I
+        # Low SOC, DCR+, PWR+
+        # Mid SOC, DCR+, DCR-, PWR+, PWR-
+        # High SOC, DCR-, PWR+
+
+    def calculate_DCR(self, data, pulse_index):
+        '''
+        data = full dataframe of test, must be indexed by step index
+        pulse_index = must be step index of pulse current
+
+        '''
+        print(data.loc[pulse_index]['Voltage(V)'], pulse_index)
+        vb = data.loc[pulse_index]['Voltage(V)'].iloc[-2] # use second to last data point
+        va = data.loc[pulse_index - 1]['Voltage(V)'].iloc[-1]
+        i = data.loc[pulse_index]['Current(A)'].iloc[-2]
+
+        dcr = (vb - va) / i
+        return dcr
+
+    def calculate_I(self, data, pulse_index):
+        '''
+            calcules the average CURRENT during a given pulse. Power draw/
+            delivery depends on voltage.
+        data = full dataframe of test, must be indexed by step index
+        pulse_index = must be step index of voltage_hold or pulse in question
+        returns the average current over that pulse by calculating total capacity delivered
+        and averaging over pulse length
+
+        '''
+        i_mean = np.mean(data.loc[pulse_index]['Current(A)']) # essentially finds current polarity
+
+        if i_mean < 0:
+            Qb = data.loc[pulse_index]['Discharge_Capacity(Ah)'].iloc[-1]
+            Qa = data.loc[pulse_index - 1]['Discharge_Capacity(Ah)'].iloc[-1]
+
+        elif i_mean > 0:
+            Qb = data.loc[pulse_index]['Charge_Capacity(Ah)'].iloc[-1]
+            Qa = data.loc[pulse_index - 1]['Charge_Capacity(Ah)'].iloc[-1]
+
+        else:
+            print('PWR current polarity not determined')
+            return 'ERR'
+
+        dQ = Qb - Qa
+        time_s = max(data.loc[pulse_index]['Test_Time(s)']) - min(data.loc[pulse_index]['Test_Time(s)'])
+        time_h = time_s / 3600
+        PWR_current = dQ  / time_h
+        return PWR_current
+
 
 
     def __iter__(self):

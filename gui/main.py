@@ -229,6 +229,39 @@ class DataApp(App):
         comparison_popup = ComparatorPopup(available_tests)
         comparison_popup.open()
 
+    def analyze_power_data(self, *args):
+        test_tab = self.plot_panel.current_tab
+        if test_tab and hasattr(test_tab, "arbin_test"):
+            try:
+                R_dc, I_peak = test_tab.arbin_test.calculate_power_data()
+            except Exception as e:
+                print("Failed calculating power test data.\n")
+                print(e)
+            else:
+                #show DCR Data
+                print("Calculated R_dc: \n", R_dc)
+
+                #show average current
+                print("Calculated I_peak: \n", I_peak)
+
+        else:
+            print("no arbin test identified in this tab!")
+
+    # def dict_display(self, dicts):
+    #     '''
+    #     Designed to visually display calculated power data,
+    #     but possible to use for other metrics as well
+    #
+    #     dicts = dictionary of dictionaries
+    #     '''
+    #     for item in dicts.keys():
+    #         data = dicts[keys] # dictionary containing the data itself
+    #         height = len(data.keys()) + 1
+    #         width =
+    #
+
+
+
 def build_app(control_module):
     main_app = DataApp()
     setattr(main_app, 'control_module', control_module)

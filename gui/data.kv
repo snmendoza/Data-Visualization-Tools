@@ -33,8 +33,12 @@
                     text: 'Tools'
                     mode: 'spinner'
                     ActionButton:
-                         text: 'Comparator'
+                         text: 'PWR Analysis'
+                         on_release: app.analyze_power_data()
+                    ActionButton:
+                         text: '*' #camparator
                          on_release: app.open_comparator()
+
 
      BoxLayout:
           orientation: 'vertical'

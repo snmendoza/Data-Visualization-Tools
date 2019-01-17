@@ -61,6 +61,34 @@
 <SideBarLabelEntry@BoxLayout>:
      orientation: 'vertical'
 
+<PlotLimiterEntry@BoxLayout>:
+     size_hint_y: None
+     height: 60
+     orientation: 'vertical'
+     Label:
+          text: root.text
+     BoxLayout:
+          orientation: 'horizontal'
+          TextInput:
+               id: 'min'
+               text: 'min'
+               multiline: False
+               on_text_validate: root.update_bounds()
+          TextInput:
+               id: 'max'
+               text: 'max'
+               multiline: False
+               on_text_validate: root.update_bounds()
+
+<SideBarLimitDesigner>:
+     orientation: 'vertical'
+     size_hint_y: None
+     Label:
+          size_hint_y: None
+          height: 45
+          text: 'Plot Bounds'
+
+
 <PlotTabbedPanel>:
      do_default_tab: False
      tab_width: 150
@@ -86,6 +114,8 @@
      disabled_color: self.color
      size_hint_x: None
      width: self.texture_size[0] + 40
+
+
 
 <PlotTab>:
      orientation: 'horizontal'
@@ -113,6 +143,8 @@
                     text: ' (mAh/g)'
                     multiline: False
                     on_text_validate: root.actual_parent.update_reference(self)
+          SideBarLimitDesigner:
+               charts: root.actual_parent.plot_handler.charts
 
           Widget:
           Button:

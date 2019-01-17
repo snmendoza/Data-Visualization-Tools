@@ -4,7 +4,7 @@ corresponding .kv file contains graphical setup and descriptions.
 '''
 
 ### properties
-from kivy.properties import ObjectProperty
+from kivy.properties import ObjectProperty, StringProperty, ListProperty
 ###
 from kivy.lang import Builder
 from kivy.clock import Clock
@@ -25,12 +25,56 @@ from os import startfile
 import configuration
 # from matplotlib import pyplot as plt
 
+class PlotLimiterEntry(BoxLayout):
+    text = StringProperty('-')
+    axis = ObjectProperty(None)
+
+    def update_bounds(self):
+        before = self.axis.get_ylim()
+        after = list(before)
+        try:
+            min = float(self.ids.min)
+        except Exception as e:
+            print('could not turn left bound to float', e)
+        else:
+            after[0] = min
+        try:
+            max = float(self.ids.max)
+        except Exception as e:
+            print('could not turn bounds to float', e)
+        else:
+            after[1] = max
+        if after[0] < after[1]:
+            self.axis.set_ylim(after[0], after[1])
+        else:
+            pass
+
+
+
+
+
 Builder.load_file(r'gui\menu_definitions.kv')
 
+class SideBarLimitDesigner(BoxLayout):
+    charts = ListProperty([])
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.build_plot_designer()
+
+    def build_plot_designer(self):
+        for chart in self.charts:
+            chart_limiter = PlotLimiterEntry()
+            chart_limiter.text = chart.get_ylabel()
+            chart_limiter.axis = chart
+            self.add_widget(chart_limiter)
+            
 class MenuBar(BoxLayout):
     scrolltree = ObjectProperty(None)
 
 class PlotTabbedPanel(TabbedPanel): pass
+
+
 
 class CustomKivyNavBar(NavigationToolbar2Kivy):
    def drag_pan(self, event):
@@ -45,9 +89,11 @@ class CustomKivyNavBar(NavigationToolbar2Kivy):
         self.canvas.draw()
 
 class PlotTab(BoxLayout):
+    actual_parent = ObjectProperty(None)
     def __init__(self, actual_parent=None, *args, **kwargs):
-        super().__init__(*args, **kwargs)
         self.actual_parent = actual_parent
+        super().__init__(*args, **kwargs)
+
 
 class CloseableHeaderOverLay(BoxLayout):
     def __init__(self, parent, *args, **kwargs):
