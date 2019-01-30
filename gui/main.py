@@ -229,7 +229,7 @@ class DataApp(App):
         comparison_popup = ComparatorPopup(available_tests)
         comparison_popup.open()
 
-    def analyze_power_data(self, *args):
+    def analyze_power_data(self, display=True, *args):
         test_tab = self.plot_panel.current_tab
         if test_tab and hasattr(test_tab, "arbin_test"):
             try:
@@ -239,10 +239,24 @@ class DataApp(App):
                 print(e)
             else:
                 #show DCR Data
-                print("Calculated R_dc: \n", R_dc)
+                stra = "\nCalculated R_dc(ohm): \n"
+                for key in R_dc.keys():
+                    stra += key+ "  :  "+ str(round(R_dc[key], 1)) + "\n"
 
                 #show average current
-                print("Calculated I_peak: \n", I_peak)
+                strb = "\nCalculated I_peak(A): \n"
+                for key in I_peak.keys():
+                    strb += key+ "   :  "+ str(round(I_peak[key], 4)) + "\n"
+
+                print(stra, strb)
+                if display:
+                    label = Label(text = stra + strb)
+                    test_tab.plot_tab.ids.sidebar.add_widget(label)
+                    # pop = Popup(title = "Power Test Results {}".format(test_tab.arbin_test.arbin_ID),
+                    #  content = label, size_hint = (None, None))
+                    # pop.open()
+                else:
+                    pass
 
         else:
             print("no arbin test identified in this tab!")

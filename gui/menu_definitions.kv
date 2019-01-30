@@ -120,6 +120,7 @@
 <PlotTab>:
      orientation: 'horizontal'
      BoxLayout:
+          id: sidebar
           padding: 2
           spacing: 5
           size_hint_x: 0.2
@@ -143,10 +144,8 @@
                     text: ' (mAh/g)'
                     multiline: False
                     on_text_validate: root.actual_parent.update_reference(self)
-          SideBarLimitDesigner:
-               charts: root.actual_parent.plot_handler.charts
-
-          Widget:
+          # SideBarLimitDesigner:
+          #      charts: root.actual_parent.plot_handler.charts
           Button:
                size_hint_y: 0.1
                text: 'View in Excel'

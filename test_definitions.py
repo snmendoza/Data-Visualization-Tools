@@ -150,10 +150,10 @@ class ArbinTest(object):
         ###
 
         ###
-        I = {'SOC 0+1C': self.calculate_I(steps_data, PWR_SOC0)
-                ,'SOC 50+1C': self.calculate_I(steps_data, PWR_SOC50a)
-                ,'SOC 50-1C': self.calculate_I(steps_data, PWR_SOC50b)
-                ,'SOC 100-1C': self.calculate_I(steps_data, PWR_SOC100)}
+        I = {'SOC 0+': self.calculate_I(steps_data, PWR_SOC0)
+                ,'SOC 50+': self.calculate_I(steps_data, PWR_SOC50a)
+                ,'SOC 50-': self.calculate_I(steps_data, PWR_SOC50b)
+                ,'SOC 100-': self.calculate_I(steps_data, PWR_SOC100)}
 
         ###
         ###

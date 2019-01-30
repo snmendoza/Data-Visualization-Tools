@@ -179,6 +179,7 @@ class PyPlotHandler(PlotHandler):
         step_CE_plot = stepq_plot.twinx()
         self.charts.append(step_CE_plot)
         step_CE_plot.set_ylabel('Coulombic Efficiency', color = grey)
+        step_CE_plot.set_ylim(.95, 1.05)
 
 
         for test in self.tests:
@@ -208,7 +209,7 @@ class PyPlotHandler(PlotHandler):
             test.qc_plot, = stepq_plot.plot(t, qc, marker='o', ls='', color=dark_orange, label='Charge Capacity')
             test.qd_plot, = stepq_plot.plot(t, qd, marker='o', ls='', color=dark_blue, label='Discharge Capacity')
             test.ce_plot, = step_CE_plot.plot(t, ce, marker='o',ls='', markersize=1.5, markerfacecolor='none', markeredgecolor=grey)
-            # test.ce_plot.set_ylim(0, 1.25)
+            # test.ce_plot.set_ylim(0.95, 1.05)
         stepq_plot.legend(loc='best')
         stepq_plot.set_ylim(bottom=0)
         stepq_plot.set_xlim(left=0)
