@@ -28,6 +28,7 @@ from . import filechooser
 ## setup
 # matplotlib.use('module://kivy.garden.matplotlib.backend_kivy')
 from kivy.garden.matplotlib.backend_kivy import FigureCanvas
+import numpy as np
 ##
 
 
@@ -241,12 +242,12 @@ class DataApp(App):
                 #show DCR Data
                 stra = "\nCalculated R_dc(ohm): \n"
                 for key in R_dc.keys():
-                    stra += key+ "  :  "+ str(round(R_dc[key], 1)) + "\n"
+                    stra += key+ "  :  "+ str(np.around(R_dc[key], 1)) + "\n"
 
                 #show average current
                 strb = "\nCalculated I_peak(A): \n"
                 for key in I_peak.keys():
-                    strb += key+ "   :  "+ str(round(I_peak[key], 4)) + "\n"
+                    strb += key+ "   :  "+ str(np.around(I_peak[key], 4)) + "\n"
 
                 print(stra, strb)
                 if display:

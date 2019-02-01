@@ -169,12 +169,16 @@ class ArbinTest(object):
         pulse_index = must be step index of pulse current
 
         '''
-        print(data.loc[pulse_index]['Voltage(V)'], pulse_index)
-        vb = data.loc[pulse_index]['Voltage(V)'].iloc[-2] # use second to last data point
-        va = data.loc[pulse_index - 1]['Voltage(V)'].iloc[-1]
-        i = data.loc[pulse_index]['Current(A)'].iloc[-2]
+        try:
+            print(data.loc[pulse_index]['Voltage(V)'], pulse_index)
+            vb = data.loc[pulse_index]['Voltage(V)'].iloc[-2] # use second to last data point
+            va = data.loc[pulse_index - 1]['Voltage(V)'].iloc[-1]
+            i = data.loc[pulse_index]['Current(A)'].iloc[-2]
 
-        dcr = (vb - va) / i
+            dcr = (vb - va) / i
+        except Exception as e:
+            print(e)
+            dcr = np.nan
         return dcr
 
     def calculate_I(self, data, pulse_index):
@@ -187,24 +191,29 @@ class ArbinTest(object):
         and averaging over pulse length
 
         '''
-        i_mean = np.mean(data.loc[pulse_index]['Current(A)']) # essentially finds current polarity
+        try:
+            i_mean = np.mean(data.loc[pulse_index]['Current(A)']) # essentially finds current polarity
 
-        if i_mean < 0:
-            Qb = data.loc[pulse_index]['Discharge_Capacity(Ah)'].iloc[-1]
-            Qa = data.loc[pulse_index - 1]['Discharge_Capacity(Ah)'].iloc[-1]
+            if i_mean < 0:
+                Qb = data.loc[pulse_index]['Discharge_Capacity(Ah)'].iloc[-1]
+                Qa = data.loc[pulse_index - 1]['Discharge_Capacity(Ah)'].iloc[-1]
 
-        elif i_mean > 0:
-            Qb = data.loc[pulse_index]['Charge_Capacity(Ah)'].iloc[-1]
-            Qa = data.loc[pulse_index - 1]['Charge_Capacity(Ah)'].iloc[-1]
+            elif i_mean > 0:
+                Qb = data.loc[pulse_index]['Charge_Capacity(Ah)'].iloc[-1]
+                Qa = data.loc[pulse_index - 1]['Charge_Capacity(Ah)'].iloc[-1]
 
-        else:
-            print('PWR current polarity not determined')
-            return 'ERR'
+            else:
+                print('PWR current polarity not determined')
+                return 'ERR'
 
-        dQ = Qb - Qa
-        time_s = max(data.loc[pulse_index]['Test_Time(s)']) - min(data.loc[pulse_index]['Test_Time(s)'])
-        time_h = time_s / 3600
-        PWR_current = dQ  / time_h
+            dQ = Qb - Qa
+            time_s = max(data.loc[pulse_index]['Test_Time(s)']) - min(data.loc[pulse_index]['Test_Time(s)'])
+            time_h = time_s / 3600
+            PWR_current = dQ  / time_h
+        except Exception as e:
+            print(e)
+            PWR_current = np.nan
+
         return PWR_current
 
 
