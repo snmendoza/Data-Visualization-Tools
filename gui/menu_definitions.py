@@ -68,7 +68,7 @@ class SideBarLimitDesigner(BoxLayout):
             chart_limiter.text = chart.get_ylabel()
             chart_limiter.axis = chart
             self.add_widget(chart_limiter)
-            
+
 class MenuBar(BoxLayout):
     scrolltree = ObjectProperty(None)
 
@@ -87,6 +87,11 @@ class CustomKivyNavBar(NavigationToolbar2Kivy):
             a.drag_pan(self._button_pressed, event.key, event.x, event.y)
         # self.canvas.draw_idle()
         self.canvas.draw()
+
+   def home(self, event):
+        NavigationToolbar2Kivy.home(self, event)
+        self.canvas.draw()
+
 
 class PlotTab(BoxLayout):
     actual_parent = ObjectProperty(None)
@@ -166,29 +171,38 @@ class PlotPanelItem(TabbedPanelItem):
 
     def update_mass(self, instance):
         '''
-        convert plot from mAh to mAh/g
+        convert plot from mAh to mAh/g and back
         intakes a TextInput (mass in milligrams), outputs nothing
         '''
         try:
-            mass = float(instance.text) / 1000
+            if instance.text == '':
+                mass = 0
+            else:
+                mass = float(instance.text) / 1000
         except Exception as e:
             print('error converting mass input to float\n', instance.text, e)
             return
 
         # recalculate arbin test with numbers
+        statistics = self.arbin_test.statistics
         q_plot = self.plot_handler.ax2
-        new_qc = self.arbin_test.statistics['Charge_Capacity(Ah)'] * 1000 / mass
-        new_qd = self.arbin_test.statistics['Discharge_Capacity(Ah)'] * 1000 / mass
+
+        if mass == 0:
+            new_qc = statistics['Charge_Capacity(Ah)'] * 1000
+            new_qd = statistics['Discharge_Capacity(Ah)'] * 1000
+            q_plot.set_ylabel('Capacity (mAh)')
+        else:
+            new_qc = statistics['Charge_Capacity(Ah)'] * 1000 / mass
+            new_qd = statistics['Discharge_Capacity(Ah)'] * 1000 / mass
+            q_plot.set_ylabel('Capacity (mAh/g)')
 
         # change the plot data
         self.arbin_test.qc_plot.set_ydata(new_qc)
         self.arbin_test.qd_plot.set_ydata(new_qd)
-
         self.plot_handler.ax2.relim()
         self.plot_handler.ax2.autoscale(enable=True, axis='y')
-        self.plot_handler.ax2.set_ylabel('Capacity (mAh/g)')
-
         self.plt_canvas.draw()
+        return True
 
     def launch_excel(self, instance, *args):
         '''
@@ -200,27 +214,27 @@ class PlotPanelItem(TabbedPanelItem):
         except Exception as e:
             print('failed to launch excel file {} : \n'.format(excel_file), e)
 
-    def update_reference(self, instance, *args):
-        '''
-        Add a milestone reference line to the capacity plot or update if not present
-        '''
-        try:
-            target = float(instance.text)
-        except Exception as e:
-            print('error converting mass input to float\n', instance.text, e)
-            return
-
-        if not int(target):
-            self.plot_handler.ref_line.set_color('white')
-            self.plot_handler.ref_line.set_label(None)
-            print('set')
-        else:
-            ref_new = [target, target]
-            self.plot_handler.ref_line.set_ydata(ref_new)
-            self.plot_handler.ref_line.set_label('Milestone')
-            self.plot_handler.ref_line.set_color('grey')
-        self.plt_canvas.draw()
-        return True
+    # def update_reference(self, instance, *args):
+    #     '''
+    #     Add a milestone reference line to the capacity plot or update if not present
+    #     '''
+    #     try:
+    #         target = float(instance.text)
+    #     except Exception as e:
+    #         print('error converting mass input to float\n', instance.text, e)
+    #         return
+    #
+    #     if not int(target):
+    #         self.plot_handler.ref_line.set_color('white')
+    #         self.plot_handler.ref_line.set_label(None)
+    #         print('set')
+    #     else:
+    #         ref_new = [target, target]
+    #         self.plot_handler.ref_line.set_ydata(ref_new)
+    #         self.plot_handler.ref_line.set_label('Milestone')
+    #         self.plot_handler.ref_line.set_color('grey')
+    #     self.plt_canvas.draw()
+    #     return True
 
 
 

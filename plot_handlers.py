@@ -165,8 +165,6 @@ class PyPlotHandler(PlotHandler):
         '''
         To redraw with mass:
         '''
-        electrode_reference = {'Anode': 1200, 'Cathode': 120, 'Full': 700}
-
         stepq_plot = self.ax2 # get a reference to the axes object
         self.charts.append(stepq_plot)
 
@@ -186,7 +184,13 @@ class PyPlotHandler(PlotHandler):
             # retrieve the data
             qc = test.statistics['Charge_Capacity(Ah)'] * 1000
             qd = test.statistics['Discharge_Capacity(Ah)'] * 1000
-            ce = [d / c for d, c in zip(qd, qc)]
+
+            #calculate coulombic efficiency
+            if test.electrode_type == 'Anode': # coulombic efficiency is defined in reverse for anode
+                ce = [c / d for d, c in zip(qd, qc)]
+            else:
+                ce = [d / c for d, c in zip(qd, qc)]
+
             t = test.statistics['Test_Time(s)'] / 3600
 
             # get active material weight
@@ -196,14 +200,8 @@ class PyPlotHandler(PlotHandler):
                 qc = qc / mass
                 qd = qd / mass
                 stepq_plot.set_ylabel('Capacity (mAh/g)')
-
-                milestone = electrode_reference[self.tests[0].electrode_type]
-                milestone_label = str(milestone) + ' mAh/g'
-                ref = [milestone, milestone]
-                self.ref_line, = stepq_plot.plot([t[0], max(t)], ref, color='0.5', label='Target')
-
             else:
-                self.ref_line, = stepq_plot.plot([t[0], max(t)], [0,0], color='0.5', label='Target')
+                pass
 
             #Plot the data
             test.qc_plot, = stepq_plot.plot(t, qc, marker='o', ls='', color=dark_orange, label='Charge Capacity')

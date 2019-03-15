@@ -135,15 +135,15 @@
                     text: '(mg)'
                     multiline: False
                     on_text_validate:print('triggered'); root.actual_parent.update_mass(self)
-          SideBarLabelEntry:
-               size_hint_y: None
-               height: 60
-               Label:
-                    text: "Target:"
-               TextInput:
-                    text: ' (mAh/g)'
-                    multiline: False
-                    on_text_validate: root.actual_parent.update_reference(self)
+          # SideBarLabelEntry:
+          #      size_hint_y: None
+          #      height: 60
+          #      Label:
+          #           text: "Target:"
+          #      TextInput:
+          #           text: ' (mAh/g)'
+          #           multiline: False
+          #           on_text_validate: root.actual_parent.update_reference(self)
           # SideBarLimitDesigner:
           #      charts: root.actual_parent.plot_handler.charts
           Button:
