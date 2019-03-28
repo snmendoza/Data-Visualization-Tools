@@ -308,7 +308,7 @@ class PyPlotHandler(PlotHandler):
             max_cycle = max(data["Cycle_Index"])
             cycles_data = data.set_index("Cycle_Index")
 
-            norm = matplotlib.colors.Normalize(vmin=0, vmax=max_cycle)
+            norm = matplotlib.colors.Normalize(vmin=1, vmax=max_cycle)
             cmap = matplotlib.cm.ScalarMappable(norm=norm, cmap=matplotlib.cm.jet)
             cmap.set_array([])
 
