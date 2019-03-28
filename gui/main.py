@@ -219,16 +219,35 @@ class DataApp(App):
         else:
             pass
 
-    def open_comparator(self, *args):
-        tests = [i for i in self.plot_panel.tab_list] # of type plottab
-        available_tests = [{'text': test.text, 'test':test} for test in tests]
-        if len(available_tests) < 1:
-            warning = Popup(title = 'No Data', size_hint = (0.5, 0.5))
-            warning.content = Label(text = 'No tests available to compare!')
-            warning.open()
-            return
-        comparison_popup = ComparatorPopup(available_tests)
-        comparison_popup.open()
+    def open_cycle_progression(self):
+        test_tab = self.plot_panel.current_tab
+
+        if test_tab and hasattr(test_tab, "plot_handler"):
+            try:
+                test_tab.plot_handler._create_cycle_progression_plot()
+                progression = test_tab.plot_handler.progression
+            except Exception as e:
+                print("Failed creating cycle progression plot.\n")
+                print(e)
+                return
+
+            canvas = FigureCanvasKivyAgg(progression)
+            nav_bar = CustomKivyNavBar(canvas)
+
+            progression_content = BoxLayout(orientation='vertical')
+            progression_content.add_widget(canvas)
+            progression_content.add_widget(nav_bar.actionbar)
+
+            try:
+                setattr(nav_bar.actionbar,'background_image', '')
+                setattr(nav_bar.actionbar,'background_color', (.5, .47, .5, 0.7))
+            except Exception as e:
+                print(e)
+
+            popup = Popup(title='Cycle Progression Plot', content=progression_content)
+            popup.open()
+        else:
+            print('test tab has no plot handler')
 
     def analyze_power_data(self, display=True, *args):
         test_tab = self.plot_panel.current_tab

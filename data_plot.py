@@ -13,7 +13,7 @@ matplotlib.use('module://kivy.garden.matplotlib.backend_kivyagg')
 from matplotlib import pyplot as plt
 from collections import OrderedDict as OrDict
 import numpy as np
-from plot_handlers import BokehPlotHandler, PyPlotHandler
+from plot_handlers import PyPlotHandler
 from test_definitions import ArbinTest
 
 
@@ -119,6 +119,7 @@ def plotting(arbin_tests):
     else:
         plotter = PyPlotHandler(arbin_tests, types=ArbinTest)
         plotter.create_plots()
+        plotter._create_cycle_progression_plot()
         plotter.show()
 
 '''
