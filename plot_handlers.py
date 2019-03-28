@@ -82,6 +82,7 @@ class PlotHandler(object):
             # self._create_infotable()
             self._create_stepix_plot()
             self._create_title()
+            self._create_cycle_progression_plot()
             self.figure.subplots_adjust(hspace=0.001)
             self.figure.suptitle(self.title)
 

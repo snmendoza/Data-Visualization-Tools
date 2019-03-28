@@ -224,7 +224,7 @@ class DataApp(App):
 
         if test_tab and hasattr(test_tab, "plot_handler"):
             try:
-                test_tab.plot_handler._create_cycle_progression_plot()
+                # test_tab.plot_handler._create_cycle_progression_plot()
                 progression = test_tab.plot_handler.progression
             except Exception as e:
                 print("Failed creating cycle progression plot.\n")
@@ -244,7 +244,7 @@ class DataApp(App):
             except Exception as e:
                 print(e)
 
-            popup = Popup(title='Cycle Progression Plot', content=progression_content)
+            popup = Popup(title='Cycle Progression Plot', content=progression_content, size_hint = (.8,.8))
             popup.open()
         else:
             print('test tab has no plot handler')
