@@ -12,6 +12,7 @@ from kivy._clock import ClockEvent
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.scrollview import ScrollView
 from kivy.uix.button import Button
+from kivy.uix.popup import Popup
 from kivy.uix.togglebutton import ToggleButton
 from kivy.uix.treeview import TreeViewNode, TreeViewLabel, TreeView
 from kivy.uix.label import Label
@@ -22,6 +23,7 @@ from kivy.garden.matplotlib.backend_kivyagg import FigureCanvasKivyAgg,\
 from functools import partial
 from time import time
 from os import startfile
+import os
 import configuration
 # from matplotlib import pyplot as plt
 
@@ -77,7 +79,7 @@ class PlotTabbedPanel(TabbedPanel): pass
 
 
 class CustomKivyNavBar(NavigationToolbar2Kivy):
-   def drag_pan(self, event):
+    def drag_pan(self, event):
         """Callback for dragging in pan/zoom mode.
         copied from matplotlib docs, overriding
         the canvas draw to make faster panning"""
@@ -88,7 +90,26 @@ class CustomKivyNavBar(NavigationToolbar2Kivy):
         # self.canvas.draw_idle()
         self.canvas.draw()
 
-   def home(self, event):
+    def save_figure(self, *args):
+        try:
+            i = 0
+            supdir = configuration.parser['settings']['save_directory']
+            while True:
+                i += 1
+                name = 'Figure_{}.png'.format(i)
+                newpath = os.path.join(supdir, name)
+                if os.path.exists(newpath):
+                    pass
+                else:
+                    self.canvas.export_to_png(newpath)
+                    popup = Popup(title='Success', content=Label(text='Saved as {} !'.format(newpath)), size_hint = (.8, .2))
+                    popup.open()
+                    break
+        except Exception as e:
+            print('failed to save!')
+            print(e)
+
+    def home(self, event):
         NavigationToolbar2Kivy.home(self, event)
         self.canvas.draw()
 

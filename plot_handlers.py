@@ -83,6 +83,7 @@ class PlotHandler(object):
             self._create_stepix_plot()
             self._create_title()
             self._create_cycle_progression_plot()
+
             self.figure.subplots_adjust(hspace=0.001)
             self.figure.suptitle(self.title)
 
@@ -314,7 +315,7 @@ class PyPlotHandler(PlotHandler):
             cmap.set_array([])
 
             colorbar = self.progression.colorbar(cmap)
-            colorbar.set_label('Cycle Index')
+            colorbar.set_label('Cycle')
             for cycle in range(max_cycle):
                 cycle_data = cycles_data.loc[cycle + 1]
                 #find index of transition from charge to discharge (or vice versa, whichever is first)

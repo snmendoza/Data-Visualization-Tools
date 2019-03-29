@@ -12,32 +12,30 @@
                     with_previous: False
                ActionOverflow:
                ActionGroup:
-                    text: 'Load'
+                    text: 'File'
                     mode: 'spinner'
-                    dropdown_width: 100
+                    dropdown_width: 150
                     ActionButton:
-                         text: 'From File'
+                         text: 'Import Local File'
                          on_release: dialog = filechooser.FileDialog(app.load_data_file); dialog.load_file(configuration.parser['settings']['data_location'])
                     ActionButton:
-                         text: 'From Excel'
+                         text: 'Import Excel File'
                          on_release: app.load_active_workbook()
-               ActionButton:
-                    text: 'Clear All'
-                    on_release: app.remove_all_tabs()
-               ActionGroup:
-                    text: 'View'
-                    mode: 'spinner'
                     ActionButton:
-                         text: 'Excel Data'
+                         text: 'Close All Files'
+                         on_release: app.remove_all_tabs()
                ActionGroup:
                     text: 'Tools'
                     size_hint_x: .2
                     mode: 'spinner'
+                    dropdown_width: 225
                     ActionButton:
-                         text: 'PWR Analysis'
+                         text: 'Power Test Analysis'
+                         halign: 'left'
                          on_release: app.analyze_power_data()
                     ActionButton:
-                         text: 'Cycle View' #camparator
+                         text: 'Plot Cycle Progression'
+                         halign: 'left'
                          on_release: app.open_cycle_progression()
 
 
