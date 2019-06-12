@@ -83,6 +83,7 @@ class PlotHandler(object):
             self._create_stepix_plot()
             self._create_title()
             self._create_cycle_progression_plot()
+            self._create_dqdv_progression_plot()
 
             self.figure.subplots_adjust(hspace=0.001)
             self.figure.suptitle(self.title)
@@ -109,6 +110,9 @@ class PyPlotHandler(PlotHandler):
 
         self.progression = plt.figure()
         self.ax5 = self.progression.add_subplot(111)
+
+        self.dqdv = plt.figure()
+        self.ax6 = self.dqdv.add_subplot(111)
 
         ## table data to ignore
         self.omit = ['Schedule Version', 'Software Version', 'Has Aux', 'Has Specail',
@@ -338,8 +342,53 @@ class PyPlotHandler(PlotHandler):
                 self.ax5.plot(charge["Charge_Capacity(Ah)"]*1000, charge["Voltage(V)"], color=cmap.to_rgba(cycle), linewidth=0.6)
                 self.ax5.plot(discharge["Discharge_Capacity(Ah)"]*1000, discharge["Voltage(V)"], color=cmap.to_rgba(cycle), linewidth=0.6)
 
+    def _create_dqdv_progression_plot(self):
+        """
 
+        """
+        self.ax6.set_ylabel('dQ/dV')
+        self.ax6.set_xlabel('Voltage')
 
+        for test in self.tests:
+            data = test.data
+            max_cycle = max(data["Cycle_Index"])
+            cycles_data = data.set_index("Cycle_Index")
+
+            norm = matplotlib.colors.Normalize(vmin=1, vmax=max_cycle)
+            cmap = matplotlib.cm.ScalarMappable(norm=norm, cmap=matplotlib.cm.jet)
+            cmap.set_array([])
+
+            colorbar = self.dqdv.colorbar(cmap)
+            colorbar.set_label('Cycle')
+            for cycle in range(max_cycle):
+                cycle_data = cycles_data.loc[cycle + 1]
+                #find index of transition from charge to discharge (or vice versa, whichever is first)
+                charge_end = cycle_data['Charge_Capacity(Ah)'].values.argmax()
+                discharge_end = cycle_data['Discharge_Capacity(Ah)'].values.argmax()
+                cycle_transition = min(discharge_end, charge_end) # i guess this will also plot the rest time but thats okay for now
+                #slice data into first and second halves
+                if charge_end < discharge_end:
+                    charge = cycle_data.iloc[:cycle_transition]
+                    discharge = cycle_data.iloc[cycle_transition:]
+
+                elif discharge_end < charge_end:
+                    charge = cycle_data.iloc[cycle_transition:]
+                    discharge = cycle_data.iloc[:cycle_transition]
+
+                else:
+                    print('unable to determine charge order')
+                    continue
+
+                SOC = np.array(charge["Charge_Capacity(Ah)"])# / max(charge["Charge_Capacity(Ah)"]))
+                DOD = np.array(discharge["Discharge_Capacity(Ah)"])# / (-1 * max(charge["Discharge_Capacity(Ah)"])))
+
+                print(len(SOC), len(charge))
+                print(type(SOC), type(charge))
+                charge_dq = np.gradient(SOC, charge['Voltage(V)'])
+                discharge_dq = np.negative(np.gradient(DOD, discharge['Voltage(V)']))
+                # plot data on same plot
+                self.ax6.plot(charge['Voltage(V)'], charge_dq, color=cmap.to_rgba(cycle), linewidth=0.6, linestyle = '--')
+                self.ax6.plot(discharge['Voltage(V)'], discharge_dq, color=cmap.to_rgba(cycle), linewidth=0.6)
 
 
     def show(self):

@@ -98,7 +98,7 @@ class DataApp(App):
         '''
         Send input file to opened file tree
         inputs: file path for data (such as arbin .xls)
-        outputs: none
+        outputs: node object
         '''
         ### get map of tests and generate arbin tests ###
         # if file in self.added_files:
@@ -245,6 +245,36 @@ class DataApp(App):
                 print(e)
 
             popup = Popup(title='Cycle Progression Plot', content=progression_content, size_hint = (.8,.8))
+            popup.open()
+        else:
+            print('test tab has no plot handler')
+
+    def open_dqdv_progression(self):
+        test_tab = self.plot_panel.current_tab
+
+        if test_tab and hasattr(test_tab, "plot_handler"):
+            try:
+                # test_tab.plot_handler._create_cycle_progression_plot()
+                dqdv = test_tab.plot_handler.dqdv
+            except Exception as e:
+                print("Failed creating cycle progression plot.\n")
+                print(e)
+                return
+
+            canvas = FigureCanvasKivyAgg(dqdv)
+            nav_bar = CustomKivyNavBar(canvas)
+
+            progression_content = BoxLayout(orientation='vertical')
+            progression_content.add_widget(canvas)
+            progression_content.add_widget(nav_bar.actionbar)
+
+            try:
+                setattr(nav_bar.actionbar,'background_image', '')
+                setattr(nav_bar.actionbar,'background_color', (.5, .47, .5, 0.7))
+            except Exception as e:
+                print(e)
+
+            popup = Popup(title='dQ/dV Progression Plot', content=progression_content, size_hint = (.8,.8))
             popup.open()
         else:
             print('test tab has no plot handler')
