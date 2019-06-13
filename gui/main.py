@@ -93,6 +93,8 @@ class DataApp(App):
                 self.plot_selected(selection = node)
         except Exception as e:
             print(e)
+        else:
+            print("loaded data file {}".format(file_list))
 
     def send_to_tree(self, file):
         '''
@@ -129,6 +131,7 @@ class DataApp(App):
         Trigger to main app to plot selected files from tree view
         no inputs, no outputs
         '''
+        print('start creating plots')
         # type references
 
         plot_handler = self.control_module.PyPlotHandler
@@ -167,8 +170,11 @@ class DataApp(App):
         '''
         Takes in figure and generates a plot tab, adds tab to the plot panel
         '''
+        print('generate plot tab')
         ### send signal to generate plots
+        print('f1')
         plot_handler.create_plots()
+        print('f2')
         ### create custom plot tab
         new_tab = PlotPanelItem(plot_handler, arbin_test,root=self.root, text='{} (Ch. {})'.format(arbin_test.item_ID, arbin_test.arbin_ID))
         ### add tab to tabbed panel

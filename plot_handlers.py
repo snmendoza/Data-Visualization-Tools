@@ -13,6 +13,8 @@ from matplotlib import pyplot as plt
 import configuration
 from collections import OrderedDict as OrDict
 import numpy as np
+from scipy.signal import medfilt, savgol_filter
+np.errstate(divide='ignore')
 
 burgundy = (0.553,0.059,0.071)
 dark_green = (0.039,0.369,0.267)
@@ -379,16 +381,18 @@ class PyPlotHandler(PlotHandler):
                     print('unable to determine charge order')
                     continue
 
-                SOC = np.array(charge["Charge_Capacity(Ah)"])# / max(charge["Charge_Capacity(Ah)"]))
-                DOD = np.array(discharge["Discharge_Capacity(Ah)"])# / (-1 * max(charge["Discharge_Capacity(Ah)"])))
+                SOC = np.array(charge["Charge_Capacity(Ah)"])
+                DOD = np.array(discharge["Discharge_Capacity(Ah)"])
 
-                print(len(SOC), len(charge))
-                print(type(SOC), type(charge))
-                charge_dq = np.gradient(SOC, charge['Voltage(V)'])
-                discharge_dq = np.negative(np.gradient(DOD, discharge['Voltage(V)']))
-                # plot data on same plot
-                self.ax6.plot(charge['Voltage(V)'], charge_dq, color=cmap.to_rgba(cycle), linewidth=0.6, linestyle = '--')
-                self.ax6.plot(discharge['Voltage(V)'], discharge_dq, color=cmap.to_rgba(cycle), linewidth=0.6)
+                if 1 < len(SOC) and len(SOC) == len(charge['Voltage(V)']):
+                    vc = savgol_filter(charge['Voltage(V)'], 45, 2, mode='nearest')
+                    charge_dq = np.gradient(SOC, vc)
+                    self.ax6.plot(vc, charge_dq, color=cmap.to_rgba(cycle), linewidth=0.6, linestyle = '--')
+                if 1 < len(DOD) and len(DOD) == len(discharge['Voltage(V)']):
+                    vd = savgol_filter(discharge['Voltage(V)'], 45, 2, mode='nearest')
+                    discharge_dq = np.gradient(DOD, vd)
+                    self.ax6.plot(vd, discharge_dq, color=cmap.to_rgba(cycle), linewidth=0.6)
+
 
 
     def show(self):
