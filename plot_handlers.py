@@ -10,6 +10,7 @@ import matplotlib
 # matplotlib.use('module://kivy.garden.matplotlib.backend_kivyagg')
 
 from matplotlib import pyplot as plt
+from matplotlib.widgets import Slider
 import configuration
 from collections import OrderedDict as OrDict
 import numpy as np
@@ -91,12 +92,21 @@ class PlotHandler(object):
             self.figure.suptitle(self.title)
 
 
+class CyclesHandler(object):
+    def __init__(self):
+        self.cycle_data = None
+        self.capacity_charge_lines = {}
+        self.capacity_discharge_lines = {}
+
+        self.differential_charge_lines = {}
+        self.differential_discharge_lines = {}
 
 class PyPlotHandler(PlotHandler):
 
     def __init__(self, tests=[], types=None):
         super().__init__(tests, types)
 
+        self.cycles_handler = CyclesHandler()
         self.charts = [] # contains i, v, q, and ce chart refs
         self.gs_data = plt.GridSpec(5, 8, hspace=0.001) # split into 5 rows and 1 column, space for title and table
 
@@ -112,6 +122,7 @@ class PyPlotHandler(PlotHandler):
 
         self.progression = plt.figure()
         self.ax5 = self.progression.add_subplot(111)
+        # self.progression.subplots_adjust(bottom=0.25)
 
         self.dqdv = plt.figure()
         self.ax6 = self.dqdv.add_subplot(111)
@@ -314,7 +325,9 @@ class PyPlotHandler(PlotHandler):
         for test in self.tests:
             data = test.data
             max_cycle = max(data["Cycle_Index"])
+            self.cycle_max = max_cycle
             cycles_data = data.set_index("Cycle_Index")
+            self.cycles_handler.cycles_data = cycles_data
 
             norm = matplotlib.colors.Normalize(vmin=1, vmax=max_cycle)
             cmap = matplotlib.cm.ScalarMappable(norm=norm, cmap=matplotlib.cm.jet)
@@ -324,6 +337,7 @@ class PyPlotHandler(PlotHandler):
             colorbar.set_label('Cycle')
             for cycle in range(max_cycle):
                 cycle_data = cycles_data.loc[cycle + 1]
+
                 #find index of transition from charge to discharge (or vice versa, whichever is first)
                 charge_end = cycle_data['Charge_Capacity(Ah)'].values.argmax()
                 discharge_end = cycle_data['Discharge_Capacity(Ah)'].values.argmax()
@@ -341,8 +355,18 @@ class PyPlotHandler(PlotHandler):
                     print('unable to determine charge order')
                     continue
                 # plot data on same plot
-                self.ax5.plot(charge["Charge_Capacity(Ah)"]*1000, charge["Voltage(V)"], color=cmap.to_rgba(cycle), linewidth=0.6)
-                self.ax5.plot(discharge["Discharge_Capacity(Ah)"]*1000, discharge["Voltage(V)"], color=cmap.to_rgba(cycle), linewidth=0.6)
+                charge_capacity = charge["Charge_Capacity(Ah)"]*1000
+                charge_voltage = charge["Voltage(V)"]
+
+                discharge_capacity = charge["Discharge_Capacity(Ah)"]*1000
+                discharge_voltage = charge["Voltage(V)"]
+
+                charge_lines = self.ax5.plot(charge_capacity, charge_voltage, color=cmap.to_rgba(cycle), linewidth=0.6)
+                discharge_lines = self.ax5.plot(discharge_capacity, discharge_voltage, color=cmap.to_rgba(cycle), linewidth=0.6)
+
+                # add pointer to specific lines for later use
+                self.cycles_handler.capacity_charge_lines[cycle + 1] = (charge_lines[0], charge_capacity)
+                self.cycles_handler.capacity_discharge_lines[cycle + 1] = (discharge_lines[0], discharge_capacity)
 
     def _create_dqdv_progression_plot(self):
         """
@@ -379,7 +403,7 @@ class PyPlotHandler(PlotHandler):
 
                 else:
                     print('unable to determine charge order')
-                    continue
+                    continueugk
 
                 SOC = np.array(charge["Charge_Capacity(Ah)"])
                 DOD = np.array(discharge["Discharge_Capacity(Ah)"])
@@ -394,6 +418,50 @@ class PyPlotHandler(PlotHandler):
                     self.ax6.plot(vd, discharge_dq, color=cmap.to_rgba(cycle), linewidth=0.6)
 
 
+    def toggle_abscissa(self, state, *args):
+        for i in np.arange(self.cycle_max):
+            cycle = i + 1
+            d_line = self.cycles_handler.capacity_discharge_lines[cycle][0]
+            d_cap = self.cycles_handler.capacity_discharge_lines[cycle][1]
+
+            c_line = self.cycles_handler.capacity_charge_lines[cycle][0]
+            c_cap = self.cycles_handler.capacity_charge_lines[cycle][1]
+
+            if state == 'Ah':
+                label = 'Capacity (Ah)'
+            elif state == 'SOC':
+                label = 'SOC/DOD'
+                d_cap = [i/max(d_cap) for i in d_cap]
+                c_cap = [i/max(c_cap) for i in c_cap]
+            d_line.set_xdata(d_cap)
+            c_line.set_xdata(c_cap)
+        self.ax5.relim()
+        self.ax5.autoscale()
+
+
+    def update_cycle_progression(self, center, width):
+        min = center - int(width/2)
+        max = min + width
+
+        if min < 0:
+            min = 0
+        else:
+            pass
+        if self.cycle_max < max:
+            max = self.cycle_max
+        else:
+            pass
+
+        for i in np.arange(self.cycle_max):
+            cycle = i + 1
+            d_line = self.cycles_handler.capacity_discharge_lines[cycle][0]
+            c_line = self.cycles_handler.capacity_charge_lines[cycle][0]
+            if min <= cycle <= max:
+                c_line.set_alpha(1)
+                d_line.set_alpha(1)
+            else:
+                c_line.set_alpha(0)
+                d_line.set_alpha(0)
 
     def show(self):
         plt.show()

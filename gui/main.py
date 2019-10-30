@@ -11,6 +11,7 @@ Config.set('kivy','exit_on_escape', 0)
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.uix.popup import Popup
+from kivy.uix.slider import Slider
 from kivy.uix.floatlayout import FloatLayout
 from kivy.core.window import Window
 from kivy.uix.popup import Popup
@@ -172,9 +173,7 @@ class DataApp(App):
         '''
         print('generate plot tab')
         ### send signal to generate plots
-        print('f1')
         plot_handler.create_plots()
-        print('f2')
         ### create custom plot tab
         new_tab = PlotPanelItem(plot_handler, arbin_test,root=self.root, text='{} (Ch. {})'.format(arbin_test.item_ID, arbin_test.arbin_ID))
         ### add tab to tabbed panel
@@ -241,7 +240,9 @@ class DataApp(App):
             nav_bar = CustomKivyNavBar(canvas)
 
             progression_content = BoxLayout(orientation='vertical')
+            cycle_slider = ProgressionControl(test_tab.plot_handler, canvas)
             progression_content.add_widget(canvas)
+            progression_content.add_widget(cycle_slider)
             progression_content.add_widget(nav_bar.actionbar)
 
             try:

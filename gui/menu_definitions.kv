@@ -80,6 +80,33 @@
                multiline: False
                on_text_validate: root.update_bounds()
 
+
+<ProgressionControl@BoxLayout>:
+     size_hint_y: 0.1
+     orientation: 'horizontal'
+     BoxLayout:
+          orientation: 'vertical'
+          size_hint_x: 0.15
+          Label:
+               text: "Cycle Center"
+          Label:
+               text: "Cycle Range"
+     BoxLayout:
+          orientation: 'vertical'
+          size_hint_x: .7
+          Slider:
+               id: cycle_center
+               step: 1
+               on_touch_move: root.update_cycle_range()
+          Slider:
+               id: cycle_width
+               step: 1
+               on_touch_move: root.update_cycle_range()
+     ToggleButton:
+          size_hint: 0.15, 1.0
+          text: 'Ah/SOC'
+          on_state: root.toggle_SOC_view(self)
+
 <SideBarLimitDesigner>:
      orientation: 'vertical'
      size_hint_y: None

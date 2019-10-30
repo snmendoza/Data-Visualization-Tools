@@ -77,6 +77,47 @@ class MenuBar(BoxLayout):
 class PlotTabbedPanel(TabbedPanel): pass
 
 
+class ProgressionControl(BoxLayout):
+    def __init__(self, handler, canvas, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.plot_handler = handler
+        self.plt_canvas = canvas
+        #dynamic quantities
+        self.cycle_center = int(self.plot_handler.cycle_max / 2)
+        self.cycle_width = int(self.plot_handler.cycle_max)
+        self.abscissa_state = 'Ah'
+
+        self.ids.cycle_center.value = self.cycle_center
+        self.ids.cycle_width.value = self.cycle_width
+
+        #static quantities
+        self.ids.cycle_center.range = (1, int(self.plot_handler.cycle_max))
+        self.ids.cycle_width.range = (1,  int(self.plot_handler.cycle_max))
+
+    def toggle_SOC_view(self, *args):
+        if 'Ah' == self.abscissa_state:
+            self.abscissa_state = 'SOC'
+        elif 'SOC' == self.abscissa_state:
+            self.abscissa_state = 'Ah'
+        else:
+            return
+        self.plot_handler.toggle_abscissa(self.abscissa_state)
+        self.plt_canvas.draw_idle()
+        return True
+
+    def update_cycle_range(self, *args):
+        cycle_center = self.ids["cycle_center"].value
+        cycle_width = self.ids["cycle_width"].value
+        if cycle_center == self.cycle_center and cycle_width == self.cycle_width:
+            return False
+        else:
+            pass
+        self.cycle_center = cycle_center
+        self.cycle_width  = cycle_width
+        self.plot_handler.update_cycle_progression(cycle_center,cycle_width)
+        self.plt_canvas.draw_idle()
+        return True
+
 
 class CustomKivyNavBar(NavigationToolbar2Kivy):
     def drag_pan(self, event):
