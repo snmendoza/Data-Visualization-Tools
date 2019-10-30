@@ -355,13 +355,13 @@ class PyPlotHandler(PlotHandler):
                     print('unable to determine charge order') # if cannot determine, make a random guess
                     charge = cycle_data.iloc[cycle_transition:]
                     discharge = cycle_data.iloc[:cycle_transition]
-
+                print(len(charge), len(discharge))
                 # plot data on same plot
                 charge_capacity = charge["Charge_Capacity(Ah)"]*1000
                 charge_voltage = charge["Voltage(V)"]
 
-                discharge_capacity = charge["Discharge_Capacity(Ah)"]*1000
-                discharge_voltage = charge["Voltage(V)"]
+                discharge_capacity = discharge["Discharge_Capacity(Ah)"]*1000
+                discharge_voltage = discharge["Voltage(V)"]
 
                 charge_lines = self.ax5.plot(charge_capacity, charge_voltage, color=cmap.to_rgba(cycle), linewidth=0.6)
                 discharge_lines = self.ax5.plot(discharge_capacity, discharge_voltage, color=cmap.to_rgba(cycle), linewidth=0.6)
@@ -405,7 +405,8 @@ class PyPlotHandler(PlotHandler):
 
                 else:
                     print('unable to determine charge order')
-                    continue
+                    charge = cycle_data.iloc[cycle_transition:]
+                    discharge = cycle_data.iloc[:cycle_transition]
 
                 SOC = np.array(charge["Charge_Capacity(Ah)"])
                 DOD = np.array(discharge["Discharge_Capacity(Ah)"])
@@ -440,6 +441,7 @@ class PyPlotHandler(PlotHandler):
                 c_cap = [i/max(c_cap) for i in c_cap]
             d_line.set_xdata(d_cap)
             c_line.set_xdata(c_cap)
+        self.ax5.set_xlabel(label)
         self.ax5.relim()
         self.ax5.autoscale()
 
@@ -456,7 +458,6 @@ class PyPlotHandler(PlotHandler):
             max = self.cycle_max
         else:
             pass
-
         for i in np.arange(self.cycle_max):
             cycle = i + 1
             d_line = axis.discharge_lines[cycle][0]
