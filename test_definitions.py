@@ -7,12 +7,14 @@
 ### import statements ###
 import databases
 import numpy as np
+from os import path
 
 class ArbinTest(object):
 
     def __init__(self, excel_file, sheets, ID=None):
         ### data files
         self.source = excel_file # excel file containing primary data
+        self.filename = path.split(self.source.io)[1]
         self.data = self.source.parse(sheets[0]) # data sheet for this test
         self.statistics = self.source.parse(sheets[1])# statistics sheet for this test
         ###
@@ -56,9 +58,9 @@ class ArbinTest(object):
         '''
         Determine electrode type based on Item ID naming convention
         '''
-        if 'a' in self.item_ID.lower():
+        if 'a-' in self.filename.lower():
             return 'Anode'
-        elif 'c' in self.item_ID.lower():
+        elif 'c-' in self.filename.lower():
             return 'Cathode'
         else:
             return 'Full'

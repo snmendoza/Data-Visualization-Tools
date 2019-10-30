@@ -78,10 +78,11 @@ class PlotTabbedPanel(TabbedPanel): pass
 
 
 class ProgressionControl(BoxLayout):
-    def __init__(self, handler, canvas, *args, **kwargs):
+    def __init__(self, handler, canvas, axis, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.plot_handler = handler
         self.plt_canvas = canvas
+        self.axis = axis # specify progression type
         #dynamic quantities
         self.cycle_center = int(self.plot_handler.cycle_max / 2)
         self.cycle_width = int(self.plot_handler.cycle_max)
@@ -101,7 +102,7 @@ class ProgressionControl(BoxLayout):
             self.abscissa_state = 'Ah'
         else:
             return
-        self.plot_handler.toggle_abscissa(self.abscissa_state)
+        self.plot_handler.toggle_abscissa(self.axis, self.abscissa_state)
         self.plt_canvas.draw_idle()
         return True
 
@@ -114,7 +115,7 @@ class ProgressionControl(BoxLayout):
             pass
         self.cycle_center = cycle_center
         self.cycle_width  = cycle_width
-        self.plot_handler.update_cycle_progression(cycle_center,cycle_width)
+        self.plot_handler.update_progression(self.axis, cycle_center,cycle_width)
         self.plt_canvas.draw_idle()
         return True
 

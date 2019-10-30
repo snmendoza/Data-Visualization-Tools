@@ -224,15 +224,15 @@ class DataApp(App):
         else:
             pass
 
-    def open_cycle_progression(self):
+    def open_progression(self, attr=None):
         test_tab = self.plot_panel.current_tab
 
         if test_tab and hasattr(test_tab, "plot_handler"):
             try:
                 # test_tab.plot_handler._create_cycle_progression_plot()
-                progression = test_tab.plot_handler.progression
+                progression = getattr(test_tab.plot_handler, attr)
             except Exception as e:
-                print("Failed creating cycle progression plot.\n")
+                print("Failed finding attribute to create plot {}.\n".format(attr))
                 print(e)
                 return
 
@@ -240,7 +240,7 @@ class DataApp(App):
             nav_bar = CustomKivyNavBar(canvas)
 
             progression_content = BoxLayout(orientation='vertical')
-            cycle_slider = ProgressionControl(test_tab.plot_handler, canvas)
+            cycle_slider = ProgressionControl(test_tab.plot_handler, canvas, progression)
             progression_content.add_widget(canvas)
             progression_content.add_widget(cycle_slider)
             progression_content.add_widget(nav_bar.actionbar)
@@ -256,35 +256,37 @@ class DataApp(App):
         else:
             print('test tab has no plot handler')
 
-    def open_dqdv_progression(self):
-        test_tab = self.plot_panel.current_tab
-
-        if test_tab and hasattr(test_tab, "plot_handler"):
-            try:
-                # test_tab.plot_handler._create_cycle_progression_plot()
-                dqdv = test_tab.plot_handler.dqdv
-            except Exception as e:
-                print("Failed creating cycle progression plot.\n")
-                print(e)
-                return
-
-            canvas = FigureCanvasKivyAgg(dqdv)
-            nav_bar = CustomKivyNavBar(canvas)
-
-            progression_content = BoxLayout(orientation='vertical')
-            progression_content.add_widget(canvas)
-            progression_content.add_widget(nav_bar.actionbar)
-
-            try:
-                setattr(nav_bar.actionbar,'background_image', '')
-                setattr(nav_bar.actionbar,'background_color', (.5, .47, .5, 0.7))
-            except Exception as e:
-                print(e)
-
-            popup = Popup(title='dQ/dV Progression Plot', content=progression_content, size_hint = (.8,.8))
-            popup.open()
-        else:
-            print('test tab has no plot handler')
+    # def open_dqdv_progression(self):
+    #     test_tab = self.plot_panel.current_tab
+    #
+    #     if test_tab and hasattr(test_tab, "plot_handler"):
+    #         try:
+    #             # test_tab.plot_handler._create_cycle_progression_plot()
+    #             dqdv = test_tab.plot_handler.dqdv
+    #         except Exception as e:
+    #             print("Failed creating cycle progression plot.\n")
+    #             print(e)
+    #             return
+    #
+    #         canvas = FigureCanvasKivyAgg(dqdv)
+    #         nav_bar = CustomKivyNavBar(canvas)
+    #
+    #         progression_content = BoxLayout(orientation='vertical')
+    #         cycle_slider = ProgressionControl(test_tab.plot_handler, canvas)
+    #         progression_content.add_widget(canvas)
+    #         progression_content.add_widget(cycle_slider)
+    #         progression_content.add_widget(nav_bar.actionbar)
+    #
+    #         try:
+    #             setattr(nav_bar.actionbar,'background_image', '')
+    #             setattr(nav_bar.actionbar,'background_color', (.5, .47, .5, 0.7))
+    #         except Exception as e:
+    #             print(e)
+    #
+    #         popup = Popup(title='dQ/dV Progression Plot', content=progression_content, size_hint = (.8,.8))
+    #         popup.open()
+    #     else:
+    #         print('test tab has no plot handler')
 
     def analyze_power_data(self, display=True, *args):
         test_tab = self.plot_panel.current_tab

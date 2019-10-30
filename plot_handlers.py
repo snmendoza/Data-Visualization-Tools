@@ -11,6 +11,7 @@ import matplotlib
 
 from matplotlib import pyplot as plt
 from matplotlib.widgets import Slider
+from matplotlib.figure import Figure
 import configuration
 from collections import OrderedDict as OrDict
 import numpy as np
@@ -92,14 +93,13 @@ class PlotHandler(object):
             self.figure.suptitle(self.title)
 
 
-class CyclesHandler(object):
-    def __init__(self):
+class CyclesHandler(Figure):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.cycle_data = None
-        self.capacity_charge_lines = {}
-        self.capacity_discharge_lines = {}
+        self.charge_lines = {}
+        self.discharge_lines = {}
 
-        self.differential_charge_lines = {}
-        self.differential_discharge_lines = {}
 
 class PyPlotHandler(PlotHandler):
 
@@ -120,11 +120,11 @@ class PyPlotHandler(PlotHandler):
         # samples info area
         # self.ax3 = self.figure.add_subplot(self.gs_data[6, 2:])#plt.subplot2grid((8,4), (6,1), colspan=3, rowspan=4)
 
-        self.progression = plt.figure()
+        self.progression = plt.figure(FigureClass=CyclesHandler)
         self.ax5 = self.progression.add_subplot(111)
         # self.progression.subplots_adjust(bottom=0.25)
 
-        self.dqdv = plt.figure()
+        self.dqdv = plt.figure(FigureClass=CyclesHandler)
         self.ax6 = self.dqdv.add_subplot(111)
 
         ## table data to ignore
@@ -352,8 +352,10 @@ class PyPlotHandler(PlotHandler):
                     discharge = cycle_data.iloc[:cycle_transition]
 
                 else:
-                    print('unable to determine charge order')
-                    continue
+                    print('unable to determine charge order') # if cannot determine, make a random guess
+                    charge = cycle_data.iloc[cycle_transition:]
+                    discharge = cycle_data.iloc[:cycle_transition]
+
                 # plot data on same plot
                 charge_capacity = charge["Charge_Capacity(Ah)"]*1000
                 charge_voltage = charge["Voltage(V)"]
@@ -365,8 +367,8 @@ class PyPlotHandler(PlotHandler):
                 discharge_lines = self.ax5.plot(discharge_capacity, discharge_voltage, color=cmap.to_rgba(cycle), linewidth=0.6)
 
                 # add pointer to specific lines for later use
-                self.cycles_handler.capacity_charge_lines[cycle + 1] = (charge_lines[0], charge_capacity)
-                self.cycles_handler.capacity_discharge_lines[cycle + 1] = (discharge_lines[0], discharge_capacity)
+                self.progression.charge_lines[cycle + 1] = (charge_lines[0], charge_capacity)
+                self.progression.discharge_lines[cycle + 1] = (discharge_lines[0], discharge_capacity)
 
     def _create_dqdv_progression_plot(self):
         """
@@ -403,7 +405,7 @@ class PyPlotHandler(PlotHandler):
 
                 else:
                     print('unable to determine charge order')
-                    continueugk
+                    continue
 
                 SOC = np.array(charge["Charge_Capacity(Ah)"])
                 DOD = np.array(discharge["Discharge_Capacity(Ah)"])
@@ -411,21 +413,24 @@ class PyPlotHandler(PlotHandler):
                 if 1 < len(SOC) and len(SOC) == len(charge['Voltage(V)']):
                     vc = savgol_filter(charge['Voltage(V)'], 45, 2, mode='nearest')
                     charge_dq = np.gradient(SOC, vc)
-                    self.ax6.plot(vc, charge_dq, color=cmap.to_rgba(cycle), linewidth=0.6, linestyle = '--')
+                    charge_lines = self.ax6.plot(vc, charge_dq, color=cmap.to_rgba(cycle), linewidth=0.6, linestyle = '--')
+
                 if 1 < len(DOD) and len(DOD) == len(discharge['Voltage(V)']):
                     vd = savgol_filter(discharge['Voltage(V)'], 45, 2, mode='nearest')
                     discharge_dq = np.gradient(DOD, vd)
-                    self.ax6.plot(vd, discharge_dq, color=cmap.to_rgba(cycle), linewidth=0.6)
+                    discharge_lines = self.ax6.plot(vd, discharge_dq, color=cmap.to_rgba(cycle), linewidth=0.6)
 
+                self.dqdv.charge_lines[cycle + 1] = (charge_lines[0], vc)
+                self.dqdv.discharge_lines[cycle + 1] = (discharge_lines[0], vd)
 
-    def toggle_abscissa(self, state, *args):
+    def toggle_abscissa(self, axis, state, *args):
         for i in np.arange(self.cycle_max):
             cycle = i + 1
-            d_line = self.cycles_handler.capacity_discharge_lines[cycle][0]
-            d_cap = self.cycles_handler.capacity_discharge_lines[cycle][1]
+            d_line = axis.discharge_lines[cycle][0]
+            d_cap = axis.discharge_lines[cycle][1]
 
-            c_line = self.cycles_handler.capacity_charge_lines[cycle][0]
-            c_cap = self.cycles_handler.capacity_charge_lines[cycle][1]
+            c_line = axis.charge_lines[cycle][0]
+            c_cap = axis.charge_lines[cycle][1]
 
             if state == 'Ah':
                 label = 'Capacity (Ah)'
@@ -439,7 +444,7 @@ class PyPlotHandler(PlotHandler):
         self.ax5.autoscale()
 
 
-    def update_cycle_progression(self, center, width):
+    def update_progression(self, axis, center, width):
         min = center - int(width/2)
         max = min + width
 
@@ -454,8 +459,8 @@ class PyPlotHandler(PlotHandler):
 
         for i in np.arange(self.cycle_max):
             cycle = i + 1
-            d_line = self.cycles_handler.capacity_discharge_lines[cycle][0]
-            c_line = self.cycles_handler.capacity_charge_lines[cycle][0]
+            d_line = axis.discharge_lines[cycle][0]
+            c_line = axis.charge_lines[cycle][0]
             if min <= cycle <= max:
                 c_line.set_alpha(1)
                 d_line.set_alpha(1)

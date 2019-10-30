@@ -97,11 +97,11 @@
           Slider:
                id: cycle_center
                step: 1
-               on_touch_move: root.update_cycle_range()
+               on_value: root.update_cycle_range()
           Slider:
                id: cycle_width
                step: 1
-               on_touch_move: root.update_cycle_range()
+               on_value: root.update_cycle_range()
      ToggleButton:
           size_hint: 0.15, 1.0
           text: 'Ah/SOC'
