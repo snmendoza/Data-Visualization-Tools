@@ -168,7 +168,7 @@ class CloseableHeaderOverLay(BoxLayout):
         self.apparent = parent
         super().__init__(*args, **kwargs)
 
-
+        
 class PlotPanelItem(TabbedPanelItem):
     def __init__(self, plot_handler, arbin_test,root=None, *args, **kwargs):
         super().__init__(*args, **kwargs)

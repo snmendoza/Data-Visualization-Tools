@@ -126,6 +126,8 @@
      size: root.apparent.size
      padding: 3
      orientation: 'horizontal'
+     on_touch_down: if args[1].button == 'right': app.compare_cells(self.apparent.plot_tab)
+
      Label:
           id:lbl
           text: root.apparent.text

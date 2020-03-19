@@ -256,37 +256,46 @@ class DataApp(App):
         else:
             print('test tab has no plot handler')
 
-    # def open_dqdv_progression(self):
-    #     test_tab = self.plot_panel.current_tab
-    #
-    #     if test_tab and hasattr(test_tab, "plot_handler"):
-    #         try:
-    #             # test_tab.plot_handler._create_cycle_progression_plot()
-    #             dqdv = test_tab.plot_handler.dqdv
-    #         except Exception as e:
-    #             print("Failed creating cycle progression plot.\n")
-    #             print(e)
-    #             return
-    #
-    #         canvas = FigureCanvasKivyAgg(dqdv)
-    #         nav_bar = CustomKivyNavBar(canvas)
-    #
-    #         progression_content = BoxLayout(orientation='vertical')
-    #         cycle_slider = ProgressionControl(test_tab.plot_handler, canvas)
-    #         progression_content.add_widget(canvas)
-    #         progression_content.add_widget(cycle_slider)
-    #         progression_content.add_widget(nav_bar.actionbar)
-    #
-    #         try:
-    #             setattr(nav_bar.actionbar,'background_image', '')
-    #             setattr(nav_bar.actionbar,'background_color', (.5, .47, .5, 0.7))
-    #         except Exception as e:
-    #             print(e)
-    #
-    #         popup = Popup(title='dQ/dV Progression Plot', content=progression_content, size_hint = (.8,.8))
-    #         popup.open()
-    #     else:
-    #         print('test tab has no plot handler')
+    def compare_cells(self, cell_two, attr='progression'):
+        test_tab = self.plot_panel.current_tab
+        test_tab_two = cell_two.actual_parent
+        print(type(cell_two))
+
+        if test_tab and hasattr(test_tab, "plot_handler") and  test_tab_two and hasattr(test_tab, "plot_handler"):
+            try:
+                # test_tab.plot_handler._create_cycle_progression_plot()
+                progression_one = getattr(test_tab.plot_handler, attr)
+                progression_two = getattr(test_tab_two.plot_handler, attr)
+            except Exception as e:
+                print("Failed creating cycle progression plot.\n")
+                print(e)
+                return
+            ### create canvas with both plotted
+            co_fig = test_tab.plot_handler.create_combined_plot([progression_one, progression_two])
+
+            canvas = FigureCanvasKivyAgg(co_fig)
+            nav_bar = CustomKivyNavBar(canvas)
+
+            progression_content = BoxLayout(orientation='vertical')
+            #create sliders for control
+            cycle_slider_one = ProgressionControl(test_tab.plot_handler, canvas)
+            cycle_slider_two = ProgressionControl(test_tab_two.plot_handler, canvas)
+
+            progression_content.add_widget(canvas)
+            progression_content.add_widget(cycle_slider_one)
+            progression_content.add_widget(cycle_slider_two)
+            progression_content.add_widget(nav_bar.actionbar)
+
+            try:
+                setattr(nav_bar.actionbar,'background_image', '')
+                setattr(nav_bar.actionbar,'background_color', (.5, .47, .5, 0.7))
+            except Exception as e:
+                print(e)
+
+            popup = Popup(title='dQ/dV Progression Plot', content=progression_content, size_hint = (.8,.8))
+            popup.open()
+        else:
+            print('test tab has no plot handler')
 
     def analyze_power_data(self, display=True, *args):
         test_tab = self.plot_panel.current_tab

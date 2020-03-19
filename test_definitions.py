@@ -32,6 +32,7 @@ class ArbinTest(object):
 
         ### inferred cell info
         self.electrode_type = self.get_electrode_type()
+        self.electrode_active_mass = 1
         ###
 
         ### cell build info
@@ -49,7 +50,7 @@ class ArbinTest(object):
         get keys that are version-specific for arbin data files
 
         '''
-        if self.version == 'new':
+        if self.version == 'new' or self.version == 'mits8':
             return {'Item ID':'Item ID'}
         else:
             return {'Item ID': ' Item_ID'}

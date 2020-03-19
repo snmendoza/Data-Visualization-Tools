@@ -24,7 +24,9 @@ class TestMapper(object):
         self.lut = {'new': {'channel':'Channel_{}_1',
                             'statistics': 'StatisticsByCycle-Chan_{}'},
                     'old': {'channel':'Channel_{}',
-                            'statistics': 'Statistics_{}'}}
+                            'statistics': 'Statistics_{}'},
+                    'mits8': {'channel':'Channel-{}_1',
+                            'statistics': 'StatisticsByCycle_chan_{}'}}
         self.version = 'old'
 
     def generate_data_mapping(self, source):
@@ -51,6 +53,9 @@ class TestMapper(object):
             if '7.00' in self.info['Software Version'].iloc[0]:
                 self.version = 'new'
                 self.convention = self.lut['new']
+            elif 'Mits8' in self.info['Software Version'].iloc[0]:
+                self.version = 'mits8'
+                self.convention = self.lut['mits8']
             else:
                 self.version = 'old'
                 self.convention = self.lut['old']
