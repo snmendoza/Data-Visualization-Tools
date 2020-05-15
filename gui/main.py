@@ -19,6 +19,7 @@ from os.path import basename
 import win32com.client
 import matplotlib
 from collections import OrderedDict as OrDict
+import traceback
 ##
 ## local imports
 from . menu_definitions import * # custom kivy nav bar
@@ -47,7 +48,7 @@ class DataApp(App):
         if control_module:
             self.data_plot = control_module
         # file tree
-        self.file_tree = self.root.ids.menubar.ids.scrolltree.ids.treeview
+        # self.file_tree = self.root.ids.menubar.ids.scrolltree.ids.treeview
         self.plotted_files = []
         self.added_files = []
         #plotting area
@@ -78,94 +79,30 @@ class DataApp(App):
         file_list should simply be a list of files -  but it is a kivy observable list,
         not an actual list apparently
         '''
-        print(file_list)
+        pyplot_handler = self.control_module.PyPlotHandler
+        ArbinTest = self.control_module.ArbinTest
 
+        if type(file_list) is not list:
+            file_list = [file_list]
+        print('File imported: \n{}'.format(file_list))
 
         try: # catch iteration error
             for file in file_list:
-                try: # catching file parsin error
-                    node = self.send_to_tree(file)
-                except Exception as e:
-                    print('failed to parse {} to file tree'.format(file), e)
-            # TODO write autpopulate setting
-            # if self.root.ids.menubar.ids.sidebar.ids.autopopulate.state == 'down' and node:
-            nodes = node.nodes
-            for node in nodes:
-                self.plot_selected(selection = node)
+                test_map = self.control_module.test_mapper.generate_data_mapping(file)
+                tests = self.control_module.test_mapper.generate_arbin_tests(test_map)
+
+                for arbin_test in tests:
+
+                    # create plot handler from arbin test
+                    test_plot_handler = pyplot_handler(arbin_test, types=ArbinTest)
+
+                    # create canvas and navigation tools, populate layout
+                    self.generate_plot_tab(test_plot_handler, arbin_test)
         except Exception as e:
             print(e)
+            traceback.print_exc()
         else:
             print("loaded data file {}".format(file_list))
-
-    def send_to_tree(self, file):
-        '''
-        Send input file to opened file tree
-        inputs: file path for data (such as arbin .xls)
-        outputs: node object
-        '''
-        ### get map of tests and generate arbin tests ###
-        # if file in self.added_files:
-        #     print('File already plotted')
-        #     return
-        # else:
-        #     self.added_files.append(file)
-        try:
-            test_map = self.control_module.test_mapper.generate_data_mapping(file)
-            tests = self.control_module.test_mapper.generate_arbin_tests(test_map)
-            tests_as_nodes = [ActiveTreeViewLabel(text = '{}_(Ch. {})'.format(test.item_ID, test.arbin_ID) , node_object = test) for test in tests]
-
-        except Exception as e:
-            print('failed send to tree \n', e)
-        ####
-
-        ### add file as node; add each test as leaf ###
-        else:
-            node = self.file_tree.add_node(TreeViewLabel(text = basename(file)))
-            for subnode in tests_as_nodes:
-                self.file_tree.add_node(subnode, node)
-            print('successfully added {} to tree'.format(file))
-            return node
-        ####
-
-    def plot_selected(self, selection = None):
-        '''
-        Trigger to main app to plot selected files from tree view
-        no inputs, no outputs
-        '''
-        print('start creating plots')
-        # type references
-
-        plot_handler = self.control_module.PyPlotHandler
-        ArbinTest = self.control_module.ArbinTest
-
-        ### get selected node, retrieved as ActiveTreeViewLabel type
-        selected_test = self.file_tree.selected_node
-        if not selected_test and not selection:
-            print('no selection made')
-            return
-        elif selection and not selected_test:
-            selected_test = selection
-        elif selected_test and not selection:
-            pass
-        else:
-            pass
-
-        ### get arbin test from node
-        # if selected_test.text in self.plotted_files:
-        #     print('File already plotted')
-        #     return
-        # else:
-        #     self.plotted_files.append(selected_test.text)
-        if not hasattr(selected_test, 'node_object'):
-            print(selected_test, 'has no "node object"')
-            return
-        arbin_test = selected_test.node_object
-
-        # create plot handler from arbin test
-        plot_handler = plot_handler(arbin_test, types=ArbinTest)
-
-        # create canvas and navigation tools, populate layout
-        self.generate_plot_tab(plot_handler, arbin_test)
 
     def generate_plot_tab(self, plot_handler, arbin_test):
         '''
@@ -205,12 +142,12 @@ class DataApp(App):
                 return
 
     def remove_all_tabs(self, *args):
-        nodes = [i for i in self.file_tree.iterate_all_nodes()]
+        # nodes = [i for i in self.file_tree.iterate_all_nodes()]
         tabs = [i for i in self.plot_panel.tab_list]
         for tab in tabs:
             self.plot_panel.remove_widget(tab)
-        for node in nodes:
-            self.file_tree.remove_node(node)
+        # for node in nodes:
+            # self.file_tree.remove_node(node)
         self.plot_panel.clear_widgets()
         self.root.ids.nav_bar.clear_widgets()
 

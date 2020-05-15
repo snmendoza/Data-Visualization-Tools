@@ -9,9 +9,9 @@ import sys
 from tkinter import *
 from tkinter import filedialog
 
-def get_file(*args):
+def get_file(*args, **kwargs):
     root = Tk()
-    file = filedialog.askopenfilename(*args)
+    file = filedialog.askopenfilename(*args, **kwargs)
     root.destroy()
     return file
 

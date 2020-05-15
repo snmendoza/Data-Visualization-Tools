@@ -16,10 +16,10 @@
                     mode: 'spinner'
                     dropdown_width: 150
                     ActionButton:
-                         text: 'Import Local File'
+                         text: 'Open'
                          on_release: dialog = filechooser.FileDialog(app.load_data_file); dialog.load_file(configuration.parser['settings']['data_location'])
                     ActionButton:
-                         text: 'Import Excel File'
+                         text: 'Open from Excel'
                          on_release: app.load_active_workbook()
                     ActionButton:
                          text: 'Close All Files'
