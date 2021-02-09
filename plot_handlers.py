@@ -335,7 +335,7 @@ class PyPlotHandler(PlotHandler):
                 discharge_capacity = discharge["Discharge_Capacity(Ah)"]*1000
                 discharge_voltage = discharge["Voltage(V)"]
 
-                charge_lines = self.ax5.plot([0,1,2], [0,1,2])#charge_capacity, charge_voltage, color=cmap.to_rgba(cycle), linewidth=0.6)
+                charge_lines = self.ax5.plot(charge_capacity, charge_voltage, color=cmap.to_rgba(cycle), linewidth=0.6)
                 discharge_lines = self.ax5.plot(discharge_capacity, discharge_voltage, color=cmap.to_rgba(cycle), linewidth=0.6)
 
                 # add pointer to specific lines for later use
@@ -382,17 +382,25 @@ class PyPlotHandler(PlotHandler):
 
                 SOC = np.array(charge["Charge_Capacity(Ah)"])
                 DOD = np.array(discharge["Discharge_Capacity(Ah)"])
-
+                print(len(SOC), len(DOD), "SOC/DOD")
+                
+                vc = savgol_filter(charge['Voltage(V)'], 45, 2, mode='nearest')
+                vd = savgol_filter(discharge['Voltage(V)'], 45, 2, mode='nearest')
+                
                 if 1 < len(SOC) and len(SOC) == len(charge['Voltage(V)']):
-                    vc = savgol_filter(charge['Voltage(V)'], 45, 2, mode='nearest')
+                    
                     charge_dq = np.gradient(SOC, vc)
                     charge_lines = self.ax6.plot(vc, charge_dq, color=cmap.to_rgba(cycle), linewidth=0.6, linestyle = '--')
-
+                else:
+                    charge_lines = self.ax6.plot(vc,vc, color=cmap.to_rgba(cycle), linewidth=0.6)
+                    
                 if 1 < len(DOD) and len(DOD) == len(discharge['Voltage(V)']):
-                    vd = savgol_filter(discharge['Voltage(V)'], 45, 2, mode='nearest')
+                    
                     discharge_dq = np.gradient(DOD, vd)
                     discharge_lines = self.ax6.plot(vd, discharge_dq, color=cmap.to_rgba(cycle), linewidth=0.6)
-
+                else:
+                    discharge_lines = self.ax6.plot(vd,vd, color=cmap.to_rgba(cycle), linewidth=0.6)
+                    
                 self.dqdv.charge_lines[cycle + 1] = (charge_lines[0], vc)
                 self.dqdv.discharge_lines[cycle + 1] = (discharge_lines[0], vd)
 

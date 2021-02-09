@@ -17,7 +17,7 @@
                     dropdown_width: 150
                     ActionButton:
                          text: 'Open'
-                         on_release: dialog = filechooser.FileDialog(app.load_data_file); dialog.load_file(configuration.parser['settings']['data_location'])
+                         on_release: dialog = filechooser.FileDialog(app, call=app.load_data_file); dialog.load_file(configuration.parser['settings']['data_location']);print('p1')
                     ActionButton:
                          text: 'Open from Excel'
                          on_release: app.load_active_workbook()

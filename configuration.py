@@ -1,8 +1,10 @@
 from configparser import ConfigParser
 from os import path
-directory = path.dirname(__file__)
+home = path.expanduser("~")
+
+#directory = path.dirname(__file__)
 parser = ConfigParser()
-parser.read(path.join(directory, 'config.ini'))
+parser.read(path.join(home, 'data-visualisation-tools/settings.ini'))
 
 if __name__ == '__main__':
     sections = parser.sections()

@@ -44,7 +44,7 @@ class TestMapper(object):
             pass
         else:
             ### store the source file
-            self.excel_file = pd.ExcelFile(source)
+            self.excel_file = pd.ExcelFile(source, engine='openpyxl')
 
             ### get info on names of other tabs to pair and search for
             self.info = self.excel_file.parse('Global_Info', skiprows=3)
@@ -108,7 +108,7 @@ def startup():
     Parse out what tests exist in the file using test mapper
     return arbin test mapping
     '''
-    source = file_utils.get_file()
+    source = "/Users/Sean/DataShare/C-02052021_Channel_21-22.xlsx"#file_utils.get_file()
     data_reader = TestMapper()
     mapping = data_reader.generate_data_mapping(source)
     arbin_tests = data_reader.generate_arbin_tests(mapping)
@@ -121,11 +121,13 @@ def plotting(arbin_tests):
             test_dict[test] = PyPlotHandler(test, types=ArbinTest)
             test_dict[test].create_plots()
             test_dict[test].show()
+        plotter = test_dict
     else:
         plotter = PyPlotHandler(arbin_tests, types=ArbinTest)
         plotter.create_plots()
         plotter._create_cycle_progression_plot()
         plotter.show()
+    return plotter
 
 '''
 External Utilities
@@ -134,9 +136,9 @@ test_mapper = TestMapper()
 
 def main():
     arbin_tests = startup()
-    plotting(arbin_tests)
+    plotter = plotting(arbin_tests)
 
 
 if __name__ == "__main__":
     arbin_tests = startup()
-    plotting(arbin_tests)
+    plotter = plotting(arbin_tests)

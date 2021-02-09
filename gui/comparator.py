@@ -37,7 +37,7 @@ class SelectableRow(RecycleDataViewBehavior, BoxLayout):
         else:
             print("selection removed for {0}".format(rv.data[index]))
 
-Builder.load_file(r'gui\comparator.kv')
+Builder.load_file(r'gui/comparator.kv')
 
 class SelectableRecycleGridLayout(FocusBehavior, LayoutSelectionBehavior, RecycleGridLayout): pass
 

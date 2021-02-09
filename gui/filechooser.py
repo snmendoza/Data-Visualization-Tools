@@ -10,7 +10,7 @@ from kivy.clock import Clock
 import os
 from utils import file_utils
 
-Builder.load_file(r'gui\filechooser.kv')
+Builder.load_file(r'gui/filechooser.kv')
 
 class LoadDialog(FloatLayout):
     "The content for a popup"
@@ -24,28 +24,21 @@ class LoadDialog(FloatLayout):
         return sorted(names_list)
 
 class FileDialog(object):
-    def __init__(self, call=None):
+    def __init__(self, app, call=None):
         self.call = call
         self.block = False
+        self.app = app
 
     def dismiss_popup(self, *args):
         self._popup.dismiss()
 
     def load_file(self, directory=None):
         '''called to open file'''
-        # self.selection = None
-        ###### this block was used to file open with kivy but the
-        ###### TK open file is much better
-       # content = LoadDialog(load=self.load, cancel=self.dismiss_popup)
+        print(directory)
+        self.selection = self.app.OSManager.get_file(initialdir = directory)
 
-        # if directory:
-        #     content.ids.filechooser.path = directory
-        # self._popup = Popup(title="Load file", content=content,
-        #                     size_hint=(0.9, 0.9))
-        # self._popup.open()
-
-        self.selection = file_utils.get_file(initialdir = directory)
         self.load(self.selection)
+
 
     def load(self, filename):
         if not self.block:

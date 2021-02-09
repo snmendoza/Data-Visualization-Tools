@@ -22,9 +22,15 @@ from kivy.garden.matplotlib.backend_kivyagg import FigureCanvasKivyAgg,\
 
 from functools import partial
 from time import time
-from os import startfile
-import os
+#from os import startfile
+import os, sys, subprocess
 import configuration
+def startfile(filename):
+            if sys.platform == 'win32':
+                os.startfile(filename)
+            else:
+                opener = "open" if sys.platform == "darwin" else "xdg-open"
+                subprocess.call([opener, filename])
 # from matplotlib import pyplot as plt
 
 class PlotLimiterEntry(BoxLayout):
@@ -55,7 +61,7 @@ class PlotLimiterEntry(BoxLayout):
 
 
 
-Builder.load_file(r'gui\menu_definitions.kv')
+Builder.load_file(r'gui/menu_definitions.kv')
 
 class SideBarLimitDesigner(BoxLayout):
     charts = ListProperty([])
@@ -168,7 +174,7 @@ class CloseableHeaderOverLay(BoxLayout):
         self.apparent = parent
         super().__init__(*args, **kwargs)
 
-        
+
 class PlotPanelItem(TabbedPanelItem):
     def __init__(self, plot_handler, arbin_test,root=None, *args, **kwargs):
         super().__init__(*args, **kwargs)

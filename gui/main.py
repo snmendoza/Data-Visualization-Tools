@@ -16,7 +16,6 @@ from kivy.uix.floatlayout import FloatLayout
 from kivy.core.window import Window
 from kivy.uix.popup import Popup
 from os.path import basename
-import win32com.client
 import matplotlib
 from collections import OrderedDict as OrDict
 import traceback
@@ -24,6 +23,7 @@ import traceback
 ## local imports
 from . menu_definitions import * # custom kivy nav bar
 from . comparator import *
+from utils import file_utils
 #import kivy.garden.contextmenu
 from . import filechooser
 ##
@@ -32,7 +32,6 @@ from . import filechooser
 from kivy.garden.matplotlib.backend_kivy import FigureCanvas
 import numpy as np
 ##
-
 
 class Root(FloatLayout): pass
 
@@ -53,6 +52,7 @@ class DataApp(App):
         self.added_files = []
         #plotting area
         self.plot_panel = self.root.ids.PlotPanel
+        self.OSManager = file_utils.OSfacade()
         return self.root
 
     def load_active_workbook(self, *args):
@@ -61,14 +61,16 @@ class DataApp(App):
         popup.open()
         try:
             popup_label.text = 'Getting Workbook name'
-            xl = win32com.client.Dispatch('Excel.Application')
-            wb = xl.ActiveWorkbook.FullName
+            ## Windows code
+            print("test")
+            wb = self.OSManager.get_active_excel()
+
             popup_label.text = 'Loading Data...'
             self.load_data_file([wb])
             popup_label.text = 'Done'
         except Exception as e:
             popup_label.text = 'Failed: {}'.format(e)
-            print('Failed to retrieve active excel workbook', e)
+            print('Failed to retrieve active excel workbook', e, traceback.print_exc())
             popup.auto_dismiss = True
         else:
             popup.dismiss()
