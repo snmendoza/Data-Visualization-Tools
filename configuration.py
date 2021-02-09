@@ -4,7 +4,9 @@ home = path.expanduser("~")
 
 #directory = path.dirname(__file__)
 parser = ConfigParser()
-parser.read(path.join(home, 'data-visualisation-tools/settings.ini'))
+dir = path.join(home, 'data-visualization-tools','settings.ini')
+print(dir)
+parser.read(dir)
 
 if __name__ == '__main__':
     sections = parser.sections()

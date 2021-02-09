@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 """
 Created on Wed Feb  7 14:02:07 2018
 
@@ -30,19 +30,19 @@ def PrintException():
 class WinTools(object):
     def __init__(self):
         print(sys.platform)
-        import win32com
-        self.win32com = win32com
+        import win32com.client
+        self.win32com = win32com.client
 
-    def get_file(*args, **kwargs):
+    def get_file(self, *args, **kwargs):
         root = Tk()
         file = filedialog.askopenfilename()#*args, **kwargs)
         root.destroy()
         return file
 
-    def get_active_excel(*args, **kwargs):
-        xl = selfwin32com.client.Dispatch('Excel.Application')
+    def get_active_excel(self, *args, **kwargs):
+        xl = self.win32com.Dispatch('Excel.Application')
         wb = xl.ActiveWorkbook.FullName
-        wb = xl.workbooks[1]
+        #wb = xl.workbooks[1]
         return wb
 
 class MacOSTools(object):
