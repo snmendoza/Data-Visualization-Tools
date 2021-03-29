@@ -174,9 +174,9 @@ class PyPlotHandler(PlotHandler):
 
             #calculate coulombic efficiency
             if test.electrode_type == 'Anode': # coulombic efficiency is defined in reverse for anode
-                ce = [c / d for d, c in zip(qd, qc)]
+                ce = [c / d if d else 0 for c, d in zip(qd, qc)]
             else:
-                ce = [d / c for d, c in zip(qd, qc)]
+                ce = [d / c if c else 0 for d, c in zip(qd, qc)]
 
             t = test.statistics['Test_Time(s)'] / 3600
 
@@ -383,24 +383,24 @@ class PyPlotHandler(PlotHandler):
                 SOC = np.array(charge["Charge_Capacity(Ah)"])
                 DOD = np.array(discharge["Discharge_Capacity(Ah)"])
                 print(len(SOC), len(DOD), "SOC/DOD")
-                
+
                 vc = savgol_filter(charge['Voltage(V)'], 45, 2, mode='nearest')
                 vd = savgol_filter(discharge['Voltage(V)'], 45, 2, mode='nearest')
-                
+
                 if 1 < len(SOC) and len(SOC) == len(charge['Voltage(V)']):
-                    
+
                     charge_dq = np.gradient(SOC, vc)
                     charge_lines = self.ax6.plot(vc, charge_dq, color=cmap.to_rgba(cycle), linewidth=0.6, linestyle = '--')
                 else:
                     charge_lines = self.ax6.plot(vc,vc, color=cmap.to_rgba(cycle), linewidth=0.6)
-                    
+
                 if 1 < len(DOD) and len(DOD) == len(discharge['Voltage(V)']):
-                    
+
                     discharge_dq = np.gradient(DOD, vd)
                     discharge_lines = self.ax6.plot(vd, discharge_dq, color=cmap.to_rgba(cycle), linewidth=0.6)
                 else:
                     discharge_lines = self.ax6.plot(vd,vd, color=cmap.to_rgba(cycle), linewidth=0.6)
-                    
+
                 self.dqdv.charge_lines[cycle + 1] = (charge_lines[0], vc)
                 self.dqdv.discharge_lines[cycle + 1] = (discharge_lines[0], vd)
 
