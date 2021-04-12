@@ -9,7 +9,9 @@ print(dir)
 parser.read(dir)
 
 if __name__ == '__main__':
-    sections = parser.sections()
+    sections = parser.sections
+    if not sections:
+        print("No config parser sections found in {}".format(dir))
     for sect in sections:
         print(sect, parser[sect])
         # configuration.parser['settings']['mass_header']

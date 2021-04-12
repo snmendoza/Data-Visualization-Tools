@@ -53,5 +53,8 @@ class TestCellData(object):
 
 
 parser = configuration.parser
-test_cell_data_path = parser.get('databases', 'test_cell_data')
-test_cell_data = TestCellData(test_cell_data_path)
+try:
+    test_cell_data_path = parser.get('databases', 'test_cell_data')
+    test_cell_data = TestCellData(test_cell_data_path)
+except Exception as e:
+    print(e, ": check settings.ini path")
