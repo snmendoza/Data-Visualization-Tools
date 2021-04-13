@@ -27,7 +27,11 @@ class ArbinTest(object):
         ### arbin related info
         self.arbin_ID = ID # this ID
         self.test_info = self.get_arbin_info()
-        self.item_ID = str(self.test_info[self.version_keys['Item ID']])
+        try:
+            self.item_ID = str(self.test_info[self.version_keys['Item ID']])
+        except:
+            print("No item ID found (deprecated in newer MITSPro)")
+            self.item_ID = 0
         ###
 
         ### inferred cell info
@@ -39,7 +43,7 @@ class ArbinTest(object):
         try:
             self.cell_build_info = self.get_build_info()
         except Exception as e:
-            print(e, '\nfailed to retrieve cell info for {}'.format(self.arbin_ID))
+            print(e, '\nDid not retrieve cell info for {} as database is no longer in use'.format(self.arbin_ID))
             self.cell_build_info = None
         else:
             print('successfully retreived build info from database : {}'.format(self.item_ID))

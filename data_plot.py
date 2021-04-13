@@ -9,7 +9,6 @@ import pandas as pd
 from utils import file_utils
 import xlrd
 import matplotlib
-matplotlib.use('module://kivy.garden.matplotlib.backend_kivyagg')
 from matplotlib import pyplot as plt
 from collections import OrderedDict as OrDict
 import numpy as np
@@ -73,6 +72,7 @@ class TestMapper(object):
                 mapping[channel_name] = (data, statistics, self.version)
 
         self.mapping = mapping
+        print("Data mapping found: {}".format(mapping))
         return mapping
 
     def generate_arbin_tests(self, mapping):

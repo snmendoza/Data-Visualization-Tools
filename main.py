@@ -4,6 +4,7 @@
 
 # import statements #
 import data_plot
+matplotlib.use('module://kivy.garden.matplotlib.backend_kivyagg')
 import gui.main
 from kivy.clock import Clock
 if __name__ == '__main__':
