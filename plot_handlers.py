@@ -143,6 +143,12 @@ class PyPlotHandler(PlotHandler):
             i = test.data['Current(A)'] * 1000
             v = test.data['Voltage(V)']
             t = test.data['Test_Time(s)'] / 3600
+            if test.cell_type == "AuxVCell":
+                v_anode = test.data["Voltage_Anode(V)"]
+                v_cathode = test.data["Voltage_Cathode(V)"]
+
+                v_plot.anode_line  = v_plot.plot(t, v_anode, color="green", linewidth=0.6, alpha=1.0)
+                v_plot.cathode_line = v_plot.plot(t, v_cathode, color="red", linewidth=0.6, alpha=1.0)
             #Plot the data
             v_plot.plot(t, v, color=black, linewidth=0.6)
             i_plot.plot(t, i, color=stark_red, linewidth=0.6)
@@ -308,39 +314,71 @@ class PyPlotHandler(PlotHandler):
             colorbar = self.progression.colorbar(cmap)
             colorbar.set_label('Cycle')
             for cycle in range(max_cycle):
+                charge_lines=[]
+                discharge_lines=[]
                 cycle_data = cycles_data.loc[cycle + 1]
 
                 #find index of transition from charge to discharge (or vice versa, whichever is first)
-                charge_end = cycle_data['Charge_Capacity(Ah)'].values.argmax()
-                discharge_end = cycle_data['Discharge_Capacity(Ah)'].values.argmax()
-                cycle_transition = min(discharge_end, charge_end) # i guess this will also plot the rest time but thats okay for now
+                try:
+                    charge_end = cycle_data['Charge_Capacity(Ah)'].values.argmax()
+                    discharge_end = cycle_data['Discharge_Capacity(Ah)'].values.argmax()
+                    cycle_transition = min(discharge_end, charge_end) # i guess this will also plot the rest time but thats okay for now
                 #slice data into first and second halves
-                if charge_end < discharge_end:
-                    charge = cycle_data.iloc[:cycle_transition]
-                    discharge = cycle_data.iloc[cycle_transition:]
-
-                elif discharge_end < charge_end:
-                    charge = cycle_data.iloc[cycle_transition:]
-                    discharge = cycle_data.iloc[:cycle_transition]
-
+                except Exception as e:
+                    print('omitting cycle error calculating voltages:', e)
+                    charge_lines = self.ax5.plot([0],[0], color=cmap.to_rgba(cycle), linewidth=0.6)
+                    discharge_lines = self.ax5.plot([0],[0], color=cmap.to_rgba(cycle), linewidth=0.6)
+                    charge_capacity = [np.nan]
+                    discharge_capacity = [np.nan]
                 else:
-                    print('unable to determine charge order') # if cannot determine, make a random guess
-                    charge = cycle_data.iloc[cycle_transition:]
-                    discharge = cycle_data.iloc[:cycle_transition]
-                print(len(charge), len(discharge))
-                # plot data on same plot
-                charge_capacity = charge["Charge_Capacity(Ah)"]*1000
-                charge_voltage = charge["Voltage(V)"]
+                    if charge_end < discharge_end:
+                        charge = cycle_data.iloc[:cycle_transition]
+                        discharge = cycle_data.iloc[cycle_transition:]
 
-                discharge_capacity = discharge["Discharge_Capacity(Ah)"]*1000
-                discharge_voltage = discharge["Voltage(V)"]
+                    elif discharge_end < charge_end:
+                        charge = cycle_data.iloc[cycle_transition:]
+                        discharge = cycle_data.iloc[:cycle_transition]
 
-                charge_lines = self.ax5.plot(charge_capacity, charge_voltage, color=cmap.to_rgba(cycle), linewidth=0.6)
-                discharge_lines = self.ax5.plot(discharge_capacity, discharge_voltage, color=cmap.to_rgba(cycle), linewidth=0.6)
+                    else:
+                        print('unable to determine charge order') # if cannot determine, make a random guess
+                        charge = cycle_data.iloc[cycle_transition:]
+                        discharge = cycle_data.iloc[:cycle_transition]
+                    print(len(charge), len(discharge))
+                    # plot data on same plot
+                    charge_capacity = charge["Charge_Capacity(Ah)"]*1000
+                    charge_voltage = charge["Voltage(V)"]
 
-                # add pointer to specific lines for later use
-                self.progression.charge_lines[cycle + 1] = (charge_lines[0], charge_capacity)
-                self.progression.discharge_lines[cycle + 1] = (discharge_lines[0], discharge_capacity)
+                    discharge_capacity = discharge["Discharge_Capacity(Ah)"]*1000
+                    discharge_voltage = discharge["Voltage(V)"]
+                    ###### If auxilary
+                    if test.cell_type == "AuxVCell":
+                        charge_anode_voltage = charge["Voltage_Anode(V)"]
+                        charge_cathode_voltage = charge["Voltage_Cathode(V)"]
+
+                        discharge_anode_voltage = discharge["Voltage_Anode(V)"]
+                        discharge_cathode_voltage = discharge["Voltage_Cathode(V)"]
+                        ## Charge/Discharge: Anode/Cathode/FULL: Voltage; CCV, CAV, etc.
+                        CAV, = self.ax5.plot(charge_capacity, charge_anode_voltage, "-.", color=cmap.to_rgba(cycle), linewidth=0.6)
+                        CCV, = self.ax5.plot(charge_capacity, charge_cathode_voltage, "--", color=cmap.to_rgba(cycle), linewidth=0.6)
+
+                        DAV, = self.ax5.plot(discharge_capacity, discharge_anode_voltage, "-.", color=cmap.to_rgba(cycle), linewidth=0.6)
+                        DCV, = self.ax5.plot(discharge_capacity, discharge_cathode_voltage, "--", color=cmap.to_rgba(cycle), linewidth=0.6)
+
+                        charge_lines.extend([CAV, CCV])
+                        discharge_lines.extend([DAV, DCV])
+
+                    else:
+                        pass
+
+                    CFV, = self.ax5.plot(charge_capacity, charge_voltage, color=cmap.to_rgba(cycle), linewidth=0.6)
+                    DFV, = self.ax5.plot(discharge_capacity, discharge_voltage, color=cmap.to_rgba(cycle), linewidth=0.6)
+
+                    charge_lines.append(CFV)
+                    discharge_lines.append(DFV)
+                    print(charge_lines)
+                    # add pointer to specific lines for later use
+                self.progression.charge_lines[cycle + 1] = (charge_lines, charge_capacity)
+                self.progression.discharge_lines[cycle + 1] = (discharge_lines, discharge_capacity)
 
     def _create_dqdv_progression_plot(self):
         """
@@ -361,48 +399,90 @@ class PyPlotHandler(PlotHandler):
             colorbar = self.dqdv.colorbar(cmap)
             colorbar.set_label('Cycle')
             for cycle in range(max_cycle):
+                charge_lines=[]
+                discharge_lines=[]
                 cycle_data = cycles_data.loc[cycle + 1]
                 #find index of transition from charge to discharge (or vice versa, whichever is first)
-                charge_end = cycle_data['Charge_Capacity(Ah)'].values.argmax()
-                discharge_end = cycle_data['Discharge_Capacity(Ah)'].values.argmax()
-                cycle_transition = min(discharge_end, charge_end) # i guess this will also plot the rest time but thats okay for now
+                try:
+                    charge_end = cycle_data['Charge_Capacity(Ah)'].values.argmax()
+                    discharge_end = cycle_data['Discharge_Capacity(Ah)'].values.argmax()
+                    cycle_transition = min(discharge_end, charge_end) # i guess this will also plot the rest time but thats okay for now
                 #slice data into first and second halves
-                if charge_end < discharge_end:
-                    charge = cycle_data.iloc[:cycle_transition]
-                    discharge = cycle_data.iloc[cycle_transition:]
-
-                elif discharge_end < charge_end:
-                    charge = cycle_data.iloc[cycle_transition:]
-                    discharge = cycle_data.iloc[:cycle_transition]
-
+                except Exception as e:
+                    print('omitting cycle error calculating voltages:', e)
+                    discharge_lines = self.ax6.plot([0][0], color=cmap.to_rgba(cycle), linewidth=0.6)
+                    charge_lines = self.ax6.plot([0],[0], color=cmap.to_rgba(cycle), linewidth=0.6)
+                    vfd = [np.nan]
+                    vfc = [np.nan]
                 else:
-                    print('unable to determine charge order')
-                    charge = cycle_data.iloc[cycle_transition:]
-                    discharge = cycle_data.iloc[:cycle_transition]
+                    if charge_end < discharge_end:
+                        charge = cycle_data.iloc[:cycle_transition]
+                        discharge = cycle_data.iloc[cycle_transition:]
 
-                SOC = np.array(charge["Charge_Capacity(Ah)"])
-                DOD = np.array(discharge["Discharge_Capacity(Ah)"])
-                print(len(SOC), len(DOD), "SOC/DOD")
+                    elif discharge_end < charge_end:
+                        charge = cycle_data.iloc[cycle_transition:]
+                        discharge = cycle_data.iloc[:cycle_transition]
 
-                vc = savgol_filter(charge['Voltage(V)'], 45, 2, mode='nearest')
-                vd = savgol_filter(discharge['Voltage(V)'], 45, 2, mode='nearest')
+                    else:
+                        print('unable to determine charge order')
+                        charge = cycle_data.iloc[cycle_transition:]
+                        discharge = cycle_data.iloc[:cycle_transition]
 
-                if 1 < len(SOC) and len(SOC) == len(charge['Voltage(V)']):
+                    SOC = np.array(charge["Charge_Capacity(Ah)"])
+                    DOD = np.array(discharge["Discharge_Capacity(Ah)"])
+                    print(len(SOC), len(DOD), "SOC/DOD")
+                    #full cell
+                    vfc = savgol_filter(charge['Voltage(V)'], 45, 2, mode='nearest')
+                    vfd = savgol_filter(discharge['Voltage(V)'], 45, 2, mode='nearest')
 
-                    charge_dq = np.gradient(SOC, vc)
-                    charge_lines = self.ax6.plot(vc, charge_dq, color=cmap.to_rgba(cycle), linewidth=0.6, linestyle = '--')
-                else:
-                    charge_lines = self.ax6.plot(vc,vc, color=cmap.to_rgba(cycle), linewidth=0.6)
+                    if 1 < len(SOC) and len(SOC) == len(charge['Voltage(V)']):
 
-                if 1 < len(DOD) and len(DOD) == len(discharge['Voltage(V)']):
+                        charge_dq = np.gradient(SOC, vfc)
+                        CFV, = self.ax6.plot(vfc, charge_dq, color=cmap.to_rgba(cycle), linewidth=0.6)
+                    else:
+                        CFV, = self.ax6.plot(vfc,vfc, color=cmap.to_rgba(cycle), linewidth=0.6)
 
-                    discharge_dq = np.gradient(DOD, vd)
-                    discharge_lines = self.ax6.plot(vd, discharge_dq, color=cmap.to_rgba(cycle), linewidth=0.6)
-                else:
-                    discharge_lines = self.ax6.plot(vd,vd, color=cmap.to_rgba(cycle), linewidth=0.6)
+                    if 1 < len(DOD) and len(DOD) == len(discharge['Voltage(V)']):
 
-                self.dqdv.charge_lines[cycle + 1] = (charge_lines[0], vc)
-                self.dqdv.discharge_lines[cycle + 1] = (discharge_lines[0], vd)
+                        discharge_dq = np.gradient(DOD, vfd)
+                        DFV, = self.ax6.plot(vfd, discharge_dq, color=cmap.to_rgba(cycle), linewidth=0.6)
+                    else:
+                        DFV, = self.ax6.plot(vfd,vfd, color=cmap.to_rgba(cycle), linewidth=0.6)
+
+                    charge_lines.append(CFV)
+                    discharge_lines.append(DFV)
+
+                    if test.cell_type == "AuxVCell":
+                    #cathode
+                        vcc = savgol_filter(charge['Voltage_Cathode(V)'], 45, 2, mode='nearest')
+                        vcd = savgol_filter(discharge['Voltage_Cathode(V)'], 45, 2, mode='nearest')
+                        #anode
+                        vac = savgol_filter(charge['Voltage_Anode(V)'], 45, 2, mode='nearest')
+                        vad = savgol_filter(discharge['Voltage_Anode(V)'], 45, 2, mode='nearest')
+                        try:
+                            charge_anode_dq = np.gradient(SOC, vac)
+                            charge_cathode_dq = np.gradient(SOC, vcc)
+                            discharge_anode_dq = np.gradient(DOD, vad)
+                            discharge_cathode_dq = np.gradient(DOD, vcd)
+
+                            CAV, = self.ax6.plot(vac, charge_dq, "-.", color=cmap.to_rgba(cycle), linewidth=0.6)
+                            CCV, = self.ax6.plot(vcc, charge_dq, "--", color=cmap.to_rgba(cycle), linewidth=0.6)
+
+                            DAV, = self.ax6.plot(vad, discharge_dq, "-.", color=cmap.to_rgba(cycle), linewidth=0.6)
+                            DCV, = self.ax6.plot(vcd, discharge_dq, "--", color=cmap.to_rgba(cycle), linewidth=0.6)
+                        except:
+                            CAV, = self.ax6.plot(vac, vac, "-.", color=cmap.to_rgba(cycle), linewidth=0.6)
+                            CCV, = self.ax6.plot(vcc, vcc, "--", color=cmap.to_rgba(cycle), linewidth=0.6)
+
+                            DAV, = self.ax6.plot(vad, vad, "-.", color=cmap.to_rgba(cycle), linewidth=0.6)
+                            DCV, = self.ax6.plot(vcd, vcd, "--", color=cmap.to_rgba(cycle), linewidth=0.6)
+
+                        charge_lines.extend([CAV, CCV])
+                        discharge_lines.extend([DAV, DCV])
+
+
+                self.dqdv.charge_lines[cycle + 1] = (charge_lines, vfc)
+                self.dqdv.discharge_lines[cycle + 1] = (discharge_lines, vfd)
 
     def create_combined_plot(self, figs=[]):
         '''
@@ -449,24 +529,54 @@ class PyPlotHandler(PlotHandler):
         return co_fig
 
 
+    def toggle_aux(self):
+        """turn aux data on and off"""
+        try:
+            alpha = plt.getp(self.ax1.cathode_line[0], "alpha")
+            if alpha:
+                self.ax1.cathode_line[0].set_alpha(0)
+                self.ax1.anode_line[0].set_alpha(0)
+            else:
+                self.ax1.cathode_line[0].set_alpha(1)
+                self.ax1.anode_line[0].set_alpha(1)
+            self.figure.canvas.draw_idle()
+        except Exception as e:
+            print(e)
+            pass
+
 
     def toggle_abscissa(self, axis, state, *args):
+        """
+        Toggle between Ah and SOC/%
+        """
         for i in np.arange(self.cycle_max):
             cycle = i + 1
-            d_line = axis.discharge_lines[cycle][0]
+            d_lines = axis.discharge_lines[cycle][0]
             d_cap = axis.discharge_lines[cycle][1]
 
-            c_line = axis.charge_lines[cycle][0]
+            c_lines = axis.charge_lines[cycle][0]
             c_cap = axis.charge_lines[cycle][1]
 
             if state == 'Ah':
                 label = 'Capacity (Ah)'
+                new_discharge_x = d_cap
+                new_charge_x = c_cap
+
             elif state == 'SOC':
                 label = 'SOC/DOD'
-                d_cap = [i/max(d_cap) for i in d_cap]
-                c_cap = [i/max(c_cap) for i in c_cap]
-            d_line.set_xdata(d_cap)
-            c_line.set_xdata(c_cap)
+                try:
+                    inverse_d_max = 1/max(d_cap)
+                    inverse_c_max = 1/max(c_cap)
+                except ZeroDivisionError:
+                    d_max = 1 # just reset to 1 if zero division error
+                    c_max = 1
+
+                new_discharge_x = [i*inverse_d_max for i in d_cap]
+                new_charge_x = [i*inverse_c_max for i in c_cap]
+
+            for dchg, chg in zip(d_lines, c_lines):
+                dchg.set_xdata(new_discharge_x)
+                chg.set_xdata(new_charge_x)
         self.ax5.set_xlabel(label)
         self.ax5.relim()
         self.ax5.autoscale()
@@ -486,14 +596,15 @@ class PyPlotHandler(PlotHandler):
             pass
         for i in np.arange(self.cycle_max):
             cycle = i + 1
-            d_line = axis.discharge_lines[cycle][0]
-            c_line = axis.charge_lines[cycle][0]
             if min <= cycle <= max:
-                c_line.set_alpha(1)
-                d_line.set_alpha(1)
+                a = 1
             else:
-                c_line.set_alpha(0)
-                d_line.set_alpha(0)
+                a = 0
+            for chg, dchg in zip(axis.discharge_lines[cycle][0], axis.charge_lines[cycle][0]):
+            ### chg and dchg is a list [f, a, c] of full, anode, cathode (dis)charge lines
+                print(type(chg), chg, "CHG INFO")
+                chg.set_alpha(a)
+                dchg.set_alpha(a)
 
     def show(self):
         plt.show()

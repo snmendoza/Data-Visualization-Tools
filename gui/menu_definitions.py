@@ -8,6 +8,7 @@ from kivy.properties import ObjectProperty, StringProperty, ListProperty
 ###
 from kivy.lang import Builder
 from kivy.clock import Clock
+from kivy.app import App
 from kivy._clock import ClockEvent
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.scrollview import ScrollView
@@ -283,6 +284,9 @@ class PlotPanelItem(TabbedPanelItem):
         except Exception as e:
             print('failed to launch excel file {} : \n'.format(excel_file), e)
 
+    def toggle_aux(self, instance):
+        self.plot_handler.toggle_aux()
+
     # def update_reference(self, instance, *args):
     #     '''
     #     Add a milestone reference line to the capacity plot or update if not present
@@ -344,3 +348,12 @@ class CustomTreeView(TreeView):
 class Root(BoxLayout):
     menubar = ObjectProperty(None)
     plotWindow = ObjectProperty(None)
+
+
+class PopupNewWindow(App):
+    def __init__(self, default_content, *args, **kwargs):
+        self.passed_layout = default_content
+        super().__init__(*args, **kwargs)
+
+    def build(self):
+        return self.passed_layout

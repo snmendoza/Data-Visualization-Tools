@@ -8,6 +8,7 @@ Config.set('input', 'mouse', 'mouse,multitouch_on_demand')
 Config.set('kivy','exit_on_escape', 0)
 ##
 ## module imports
+import multiprocessing
 from kivy.app import App
 from kivy.lang import Builder
 from kivy.uix.popup import Popup
@@ -189,6 +190,10 @@ class DataApp(App):
                 setattr(nav_bar.actionbar,'background_color', (.5, .47, .5, 0.7))
             except Exception as e:
                 print(e)
+                ### attempt to make new window, but doesnt have native support
+            # new_window = PopupNewWindow(progression_content)
+            # a = multiprocessing.Process(target=new_window.run)
+            # a.start()
 
             popup = Popup(title='Cycle Progression Plot', content=progression_content, size_hint = (.8,.8))
             popup.open()
@@ -280,7 +285,9 @@ class DataApp(App):
     #         height = len(data.keys()) + 1
     #         width =
     #
-
+    def _on_dropfile(self, window, filepath):
+        print("received file drop")
+        self.load_data_file(filepath)
 
 
 def build_app(control_module):

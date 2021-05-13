@@ -164,18 +164,22 @@
                     text: '(mg)'
                     multiline: False
                     on_text_validate:print('triggered'); root.actual_parent.update_mass(self)
-          # SideBarLabelEntry:
-          #      size_hint_y: None
-          #      height: 60
-          #      Label:
-          #           text: "Target:"
-          #      TextInput:
-          #           text: ' (mAh/g)'
-          #           multiline: False
-          #           on_text_validate: root.actual_parent.update_reference(self)
-          # SideBarLimitDesigner:
-          #      charts: root.actual_parent.plot_handler.charts
+      # SideBarLabelEntry:
+      #      size_hint_y: None
+      #      height: 60
+      #      Label:
+      #           text: "Target:"
+      #      TextInput:
+      #           text: ' (mAh/g)'
+      #           multiline: False
+      #           on_text_validate: root.actual_parent.update_reference(self)
+      # SideBarLimitDesigner:
+      #      charts: root.actual_parent.plot_handler.charts
           Button:
-               size_hint_y: 0.1
+               size_hint_y: 0.2
+               text: 'Toggle Aux.'
+               on_release: root.actual_parent.toggle_aux(self)
+          Button:
+               size_hint_y: 0.6
                text: 'View in Excel'
                on_release: root.actual_parent.launch_excel(self)

@@ -36,6 +36,7 @@ class ArbinTest(object):
 
         ### inferred cell info
         self.electrode_type = self.get_electrode_type()
+        self.cell_type = self. get_cell_type() # AuxVCell or Standard
         self.electrode_active_mass = 1
         ###
 
@@ -69,6 +70,19 @@ class ArbinTest(object):
             return 'Cathode'
         else:
             return 'Full'
+
+    def get_cell_type(self):
+        '''
+        Determine electrode type based on Item ID naming convention
+        '''
+        if "Aux_Voltage_1(V)" in self.data.keys():
+            self.data["Voltage_Anode(V)"] = self.data["Aux_Voltage_1(V)"]
+            self.data["Voltage_Cathode(V)"] = self.data["Aux_Voltage_1(V)"] + self.data["Voltage(V)"]
+            return 'AuxVCell'
+        else:
+            return 'Standard'
+
+
 
     def get_arbin_info(self):
         '''
