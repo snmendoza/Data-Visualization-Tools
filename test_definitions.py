@@ -25,7 +25,8 @@ class ArbinTest(object):
         ###
 
         ### arbin related info
-        self.arbin_ID = ID # this ID
+        self.arbin_ID = ID # this is actually channel
+        self.title = self.create_title() # good title for plots and stuff
         self.test_info = self.get_arbin_info()
         try:
             self.item_ID = str(self.test_info[self.version_keys['Item ID']])
@@ -49,6 +50,17 @@ class ArbinTest(object):
         else:
             print('successfully retreived build info from database : {}'.format(self.item_ID))
         ###
+
+    def create_title(self):
+        """
+        title: Ch15 (F-04182021A)
+
+        """
+        info_sheet = self.source.parse('Global_Info', nrows=1)
+        print(info_sheet.keys())
+        file = info_sheet["TEST REPORT"].iloc[0]
+        text = "Ch{} {}".format(self.arbin_ID, file)
+        return text
 
     def get_version_keys(self):
         '''

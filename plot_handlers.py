@@ -80,15 +80,15 @@ class PyPlotHandler(PlotHandler):
 
         self.cycles_handler = CyclesHandler()
         self.charts = [] # contains i, v, q, and ce chart refs
-        self.gs_data = plt.GridSpec(5, 8, hspace=0.001) # split into 5 rows and 1 column, space for title and table
+        self.gs_data = plt.GridSpec(20, 8, hspace=0.001) # split into 20 rows and 1 column, space for title and table
 
         self.figure = plt.figure(figsize=(8,8))
         # voltage/current curves
-        self.ax1 = self.figure.add_subplot(self.gs_data[2:4,:])#, colspan=4, rowspan=2)
+        self.ax1 = self.figure.add_subplot(self.gs_data[7:18,:])#, colspan=4, rowspan=2)
         # capacity data
-        self.ax2 = self.figure.add_subplot(self.gs_data[0:2,:], sharex=self.ax1)#, colspan=4, rowspan=2, sharex=self.ax1)
+        self.ax2 = self.figure.add_subplot(self.gs_data[0:7,:], sharex=self.ax1)#, colspan=4, rowspan=2, sharex=self.ax1)
         # step index area
-        self.ax4 = self.figure.add_subplot(self.gs_data[4,:], sharex=self.ax1)#, colspan=4, rowspan=1, sharex=self.ax1)
+        self.ax4 = self.figure.add_subplot(self.gs_data[18:20,:], sharex=self.ax1)#, colspan=4, rowspan=1, sharex=self.ax1)
         # samples info area
         # self.ax3 = self.figure.add_subplot(self.gs_data[6, 2:])#plt.subplot2grid((8,4), (6,1), colspan=3, rowspan=4)
 
@@ -108,11 +108,11 @@ class PyPlotHandler(PlotHandler):
         title = ''
         title_format = ' {} Cell {} (ch {})'
         for test in self.tests:
-            electrode = test.electrode_type
-            item_id = test.item_ID
-            chan = test.arbin_ID
+            # electrode = test.electrode_type
+            # item_id = test.item_ID
+            # chan = test.arbin_ID
 
-            entry = title_format.format(electrode, item_id, chan)
+            entry = test.title
             title += entry + ';'
 
         subtitle = '\nfile: {}'.format(self.tests[0].source.io)

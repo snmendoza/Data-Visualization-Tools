@@ -1,0 +1,104 @@
+<WhiteLabel@Label>:
+     color: 0,0,0,1
+
+<ChartCheckBox@CheckBox>:
+     canvas.before:
+          Color:
+               rgba: 1,1,1,1
+          Rectangle:
+               pos: self.pos
+               size: self.size
+
+<TreeViewSeriesLabel>:
+     canvas.before:
+          Color:
+               rgba: 1,1,1,1
+          Rectangle:
+               pos: self.pos
+               size: self.size
+     height: 30
+     orientation: "horizontal"
+     WhiteLabel:
+          id: "label"
+          text: root.text
+          halign: "right"
+          size_hint_x: 0.5
+     ChartCheckBox:
+          axis: "x1"
+          id: x_checkbox
+          size_hint_x: 0.1
+          group: root.filename
+          on_active: root.trigger_update(self)
+     ChartCheckBox:
+          axis: "y1"
+          id: y1_checkbox
+          size_hint_x: 0.1
+          on_active: root.trigger_update(self)
+     ChartCheckBox:
+          axis: "y2"
+          id: y2_checkbox
+          size_hint_x: 0.1
+          on_active: root.trigger_update(self)
+     TextInput:
+          size_hint_x: 0.2
+          text: ""
+
+<TreeViewCellLabel>:
+     canvas.before:
+          Color:
+               rgba: 1,1,1,1
+          Rectangle:
+               pos: self.pos
+               size: self.size
+     height: 30
+     orientation: "horizontal"
+     WhiteLabel:
+          size_hint_x: .5
+          text: root.text
+          halign: "left"
+     WhiteLabel:
+          text: "[x1]"
+          size_hint_x: 0.1
+     WhiteLabel:
+          text: "[y1]"
+          size_hint_x: 0.1
+     WhiteLabel:
+          text: "[y2]"
+          size_hint_x: 0.1
+     TextInput:
+          text: "Alt Text"
+          multiline: False
+          on_text_validate: root.update_legend_text(self)
+          size_hint_x: .2
+
+<ModChartTab>
+     BoxLayout:
+          orientation: 'vertical'
+          BoxLayout:
+               id: chart_box
+               size_hint_y: 0.8
+               size_hint_x: 1
+               orientation: "vertical"
+          Splitter:
+               id: splitter
+               size_hint_y: 0.1
+               size_hint_x: 1
+               sizable_from:"top"
+               min_size: 20
+               ScrollView:
+                    TreeView:
+                         size_hint: 1, None
+                         height: self.minimum_height
+                         canvas:
+                              Color:
+                                   rgb: [1,0,0,1]
+                         id: treeview
+                         root_options: dict(text = "Data")
+<ModChartLayout>:
+     do_default_tab: False
+     ModChartTab:
+          id: data_tab
+          text: "Test Data"
+     ModChartTab:
+          id: statistical_tab
+          text: "Statistical"

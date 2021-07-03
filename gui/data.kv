@@ -30,6 +30,10 @@
                     mode: 'spinner'
                     dropdown_width: 225
                     ActionButton:
+                         text: 'Design Chart'
+                         halign: 'left'
+                         on_release: app.launch_mod_chart()
+                    ActionButton:
                          text: 'Power Test Analysis'
                          halign: 'left'
                          on_release: app.analyze_power_data()
@@ -43,13 +47,14 @@
                          on_release: app.open_progression('dqdv')
 
 
+
      BoxLayout:
           orientation: 'vertical'
           size_hint: 1,0.9
           pos: 0,0
-          MenuBar:
-               id: menubar
-               size_hint_y: .2
+          # MenuBar:
+          #      id: menubar
+          #      size_hint_y: .2
           PlotTabbedPanel:
                id: PlotPanel
           BoxLayout:

@@ -23,7 +23,7 @@ import traceback
 ##
 ## local imports
 from . menu_definitions import * # custom kivy nav bar
-from . comparator import *
+from . modcharthandler import *
 from utils import file_utils
 #import kivy.garden.contextmenu
 from . import filechooser
@@ -115,7 +115,7 @@ class DataApp(App):
         ### send signal to generate plots
         plot_handler.create_plots()
         ### create custom plot tab
-        new_tab = PlotPanelItem(plot_handler, arbin_test,root=self.root, text='{} (Ch. {})'.format(arbin_test.item_ID, arbin_test.arbin_ID))
+        new_tab = PlotPanelItem(plot_handler, arbin_test,root=self.root, text=arbin_test.title)
         ### add tab to tabbed panel
         self.plot_panel.add_widget(new_tab)
         new_tab.on_release()
@@ -200,46 +200,19 @@ class DataApp(App):
         else:
             print('test tab has no plot handler')
 
-    def compare_cells(self, cell_two, attr='progression'):
-        test_tab = self.plot_panel.current_tab
-        test_tab_two = cell_two.actual_parent
-        print(type(cell_two))
-
-        if test_tab and hasattr(test_tab, "plot_handler") and  test_tab_two and hasattr(test_tab, "plot_handler"):
-            try:
-                # test_tab.plot_handler._create_cycle_progression_plot()
-                progression_one = getattr(test_tab.plot_handler, attr)
-                progression_two = getattr(test_tab_two.plot_handler, attr)
-            except Exception as e:
-                print("Failed creating cycle progression plot.\n")
-                print(e)
-                return
-            ### create canvas with both plotted
-            co_fig = test_tab.plot_handler.create_combined_plot([progression_one, progression_two])
-
-            canvas = FigureCanvasKivyAgg(co_fig)
-            nav_bar = CustomKivyNavBar(canvas)
-
-            progression_content = BoxLayout(orientation='vertical')
-            #create sliders for control
-            cycle_slider_one = ProgressionControl(test_tab.plot_handler, canvas)
-            cycle_slider_two = ProgressionControl(test_tab_two.plot_handler, canvas)
-
-            progression_content.add_widget(canvas)
-            progression_content.add_widget(cycle_slider_one)
-            progression_content.add_widget(cycle_slider_two)
-            progression_content.add_widget(nav_bar.actionbar)
-
-            try:
-                setattr(nav_bar.actionbar,'background_image', '')
-                setattr(nav_bar.actionbar,'background_color', (.5, .47, .5, 0.7))
-            except Exception as e:
-                print(e)
-
-            popup = Popup(title='dQ/dV Progression Plot', content=progression_content, size_hint = (.8,.8))
-            popup.open()
+    def launch_mod_chart(self, *args, **kwargs):
+        if not hasattr(self, "modcharthandler"):
+            ### define mod chart, pass list of cells and pointers for data
+            tabs = self.plot_panel.tab_list
+            self.modcharthandler = ModChartHandler(tabs, app = self)
         else:
-            print('test tab has no plot handler')
+            ## already have mod chart
+            print(self.modcharthandler.ModChartLayout.parent)
+            self.modcharthandler.ModChartLayout.parent.remove_widget(self.modcharthandler.ModChartLayout)
+            self.modcharthandler.update_tests(self.plot_panel.tab_list)
+        popup = Popup(title='Modular Chart Design', content=self.modcharthandler.ModChartLayout, size_hint = (.8,.8))
+        popup.open()
+
 
     def analyze_power_data(self, display=True, *args):
         test_tab = self.plot_panel.current_tab
