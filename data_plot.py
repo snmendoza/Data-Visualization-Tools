@@ -43,10 +43,13 @@ class TestMapper(object):
             pass
         else:
             ### store the source file
-            self.excel_file = pd.ExcelFile(source, engine='openpyxl')
-
+            try:
+                 self.excel_file = pd.ExcelFile(source, engine='openpyxl')
+            except:
+                 self.excel_file = pd.ExcelFile(source, engine='xlrd')
             ### get info on names of other tabs to pair and search for
             self.info = self.excel_file.parse('Global_Info', skiprows=3)
+            
 
             ## determine naming convention by version
             if '7.00' in self.info['Software Version'].iloc[0]:
